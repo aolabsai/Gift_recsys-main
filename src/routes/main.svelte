@@ -12,12 +12,17 @@
     let product = null;
     let genre = null;
 
+    let createNewAgentPage = false;
+    let newAgentName = "";
+
     let loggedin = false;
     let email = "";
     let password = "";
     let message = '';
     let isLoading = false;
     let showrecommendationPage = false;
+    let agents = [];
+    let agentInUse = null
 
     async function fetchCountries() {
         const response = await fetch('/public/google-countries.json');
@@ -45,11 +50,12 @@
         product = await productResponse.json();
         console.log(product);
         recommendedProduct = product;
-
+        
+        const data = {product, agentInUse}
         const agentResponse = await fetch("http://127.0.0.1:5000/agent-recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(product),
+            body: JSON.stringify(data),
         });
         const agentData = await agentResponse.json();
         console.log("agentdata:", agentData);
@@ -84,7 +90,7 @@
     }
 
     async function createNewAgent(){
-        const data = {email}
+        const data = {email, newAgentName}
         
         const response = await fetch("http://127.0.0.1:5000/createNewAgent", {
             method: "POST",
@@ -104,6 +110,13 @@
         });
         const res = await response.json()
         console.log(res)
+        agents = res;
+    }
+
+    function updateAgentInUse(email, name){
+
+        agentInUse = [email, name]
+        console.log("Agent is use: ", agentInUse)
     }
 
     const createAccount = async () => {
@@ -162,13 +175,41 @@
         <button on:click={createAccount}>Create New Account</button>
         <p>{message}</p>
     {/if}
-    {#if loggedin}
+    {#if loggedin && !showrecommendationPage && !createNewAgentPage}
+
         <h1>Hello</h1>
-        <button on:click={createNewAgent}>New Agent</button>
+        <button on:click={() => { 
+            createNewAgentPage = true;
+        }}>New Agent</button>
         <button on:click={getAgents}>Retrieve Agents</button>
 
     {/if}
+    {#if agents.length > 0}
+        <h2>Choose an Agent</h2>
+        <div class="agent-list">
+            {#each agents as agent}
+
+                    <button on:click={() => { 
+                        showrecommendationPage = true;
+                        updateAgentInUse(agent.email, agent.name)
+                    }}>{agent.name}</button>
+
+            {/each}
+        </div>
+    {/if}
+    {#if createNewAgentPage}
+    <button on:click={() => { 
+        createNewAgentPage = false;
+
+    }}>Back</button>
+        <h1>Create a new agent</h1>
+        <input placeholder="Agent Name" bind:value={newAgentName}>
+        <button on:click={createNewAgent}>Create</button>
+    {/if}
     {#if showrecommendationPage}
+    <button on:click={() => { 
+        showrecommendationPage = false;
+    }}>Back</button>
     <h1>Gift Recommender</h1>
     <label>Country:
         <select bind:value={selectedCountry}>

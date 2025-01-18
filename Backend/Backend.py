@@ -90,24 +90,97 @@ def get_random_product():
 def agent_recommend():
     data = request.json
     product_name = data.get("product_name", "")
+    agent_in_use = data.get("agentInUse")
+    email = agent_in_use[0]
+    name_of_agent = agent_in_use[1]
+    print("Agent info:", email, name_of_agent)
+    
     price = data.get("price", 0)
     price = str(price)
+    
     if price:
-        match = re.search(r"[-+]?\d*\.\d+|\d+", price)  # Search for the number pattern
+        match = re.search(r"[-+]?\d*\.\d+|\d+", price)
         if match:
-            price = (float(match.group()))  # Convert the matched string to a float, then to an integer
-            print(price)
+            price = float(match.group())
         else:
             price = int(price)
-            print("No match found")
     else:
-        print("no price")
-
+        print("No price provided.")
     
-    cldis, genre, bucketid, genre_binary = em.auto_sort(
-        cache, word=product_name, max_distance=10, bucket_array=bucket,
-        type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
-    )
+  
+    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+    
+    agent_data = None
+    agent_document_id = None
+    for agent in agent_ref:
+        agent_data = agent.to_dict()  
+        agent_document_id = agent.id  
+    
+    if not agent_data:
+        return jsonify({"error": "Agent not found for the given email and name"}), 400
+    
+    print("Found agent with document ID:", agent_document_id)
+    
+
+    agent = ao.Agent(arch)  
+    
+
+    try:
+        inputs_ref = db.collection('Agents').document(agent_document_id).collection('inputs').stream()
+        outputs_ref = db.collection('Agents').document(agent_document_id).collection('outputs').stream()
+    except Exception as e:
+        print(f"Error fetching inputs or outputs: {e}")
+        return jsonify({"error": "Error fetching data from Firestore"}), 500
+
+    inputs = [input_doc.to_dict() for input_doc in list(inputs_ref)]
+    outputs = [output_doc.to_dict() for output_doc in list(outputs_ref)]
+    
+
+    print(f"Retrieved {len(inputs)} inputs and {len(outputs)} outputs.")
+    
+    if not inputs:
+        return jsonify({"error": "No input data found for the given agent"}), 400
+    
+    if not outputs:
+        return jsonify({"error": "No output data found for the given agent"}), 400
+    
+
+    def convert_to_binary_array(binary_string):
+        return [int(bit) for bit in binary_string]
+    
+    binary_inputs = []
+    binary_outputs = []
+    
+    for input_data in inputs:
+        for key, value in input_data.items():
+
+            binary_inputs.append(convert_to_binary_array(value))
+    
+    for output_data in outputs:
+        for key, value in output_data.items():
+
+            binary_outputs.append(convert_to_binary_array(value))
+    
+
+    for i in range(len(binary_outputs)):
+        try:
+            print(f"Training with input: {binary_inputs[i]}, output: {binary_outputs[i]}")
+            agent.next_state(INPUT=binary_inputs[i], LABEL=binary_outputs[i])
+        except Exception as e:
+            print(f"Error during next_state call: {e}")
+            return jsonify({"error": "Error during agent training"}), 500
+
+
+    try:
+        cldis, genre, bucketid, genre_binary = em.auto_sort(
+            cache, word=product_name, max_distance=10, bucket_array=bucket,
+            type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
+        )
+    except Exception as e:
+        print(f"Error during auto_sort: {e}")
+        return jsonify({"error": "Error during auto_sort processing"}), 500
+    
+
     if price < 25:
         price_binary = [0, 0]
     elif price < 50:
@@ -118,12 +191,24 @@ def agent_recommend():
         price_binary = [1, 1]
 
     input_to_agent = np.concatenate([price_binary, genre_binary])
-    response = agent.next_state(input_to_agent)
-    recommendation_score = (sum(response) / len(response)) * 100
+
+
+    try:
+        response = agent.next_state(input_to_agent)
+        if sum(response) ==0:
+            recommendation_score = 0
+        else:
+            recommendation_score = (sum(response) / len(response)) * 100
+    except Exception as e:
+        print(f"Error during agent recommendation: {e}")
+        return jsonify({"error": "Error during recommendation calculation"}), 500
+    
     return jsonify({
         "genre": genre,
         "recommendation_score": recommendation_score
     })
+
+
 
 @app.route('/trainAgent', methods=["POST"])
 def trainAgent():
@@ -202,9 +287,10 @@ def createAccount():
 def createNewAgent():
     data=request.json
     email = data.get("email")
+    agent_name = data.get("newAgentName")
     Agent_info={
-        "email":email
-
+        "email":email,
+        "name": agent_name,
     }
     doc_ref = db.collection('Agents').add(Agent_info)
     agent = ao.Agent(arch, "agent")
@@ -222,32 +308,29 @@ def getAgents():
     
     agents_list = []
     
-    # Loop through each agent document
+
     for agent in user_agents:
-        agent_data = agent.to_dict()  # Convert the agent document to a dictionary
+        agent_data = agent.to_dict() 
         agents_list.append(agent_data)
 
-        # Get 'inputs' and 'outputs' subcollections for each agent
+
         inputs_ref = agent.reference.collection('inputs').stream()
         outputs_ref = agent.reference.collection('outputs').stream()
         
-        inputs = []  # List to store input data for each agent
-        outputs = []  # List to store output data for each agent
+        inputs = []  
+        outputs = []  
         
-        # Loop through and gather input data
+
         for input_doc in inputs_ref:
             inputs.append(input_doc.to_dict())  # Append input data
         
-        # Loop through and gather output data
         for output_doc in outputs_ref:
             outputs.append(output_doc.to_dict())  # Append output data
 
-        # Add inputs and outputs to the agent data
         agent_data['inputs'] = inputs
         agent_data['outputs'] = outputs
         
-        # You could choose to update the agents list with this enriched data
-        # agents_list[-1] = agent_data  # Or just append as done previously
+
 
         print("Agent Data: ", agent_data)
     
