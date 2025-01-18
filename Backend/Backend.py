@@ -7,7 +7,7 @@ import numpy as np
 import http.client
 from urllib.parse import quote
 
-from config import openai_key, Rapid_key, firebase_sdk
+from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
 import ao_core as ao
 
@@ -22,7 +22,12 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+load_dotenv()
 
+openai_key = os.getenv("OPENAI_KEY")
+rapid_key = os.getenv("RAPID_KEY")
+firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
+print(firebase_sdk)
 cred = credentials.Certificate(firebase_sdk)
 firebase_admin.initialize_app(cred)
 
