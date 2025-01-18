@@ -1,30 +1,39 @@
-# Use a base image with Python
-FROM python:3.9-slim
+# Start from Python 3.12 slim image
+FROM python:3.12-slim
 
-# Set environment variables (GH_TOKEN will be passed during build)
-ARG GH_TOKEN
-ENV GH_TOKEN=${GH_TOKEN}
-
-# Set the working directory in the container
+# Create a directory for the app inside the container
 WORKDIR /app
 
-# Install git (required to clone private repositories)
-RUN apt-get update && apt-get install -y git
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
 
-# Clone the private repository using the GitHub token (this time we use a simple ENV variable reference)
+# Install necessary dependencies like git
+RUN apt-get update && \
+    apt-get install -y git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy your app code into the container
+COPY . /app
+
+# Install dependencies from the requirements file
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Clone the private repo (ao_core) using GitHub PAT (GH_TOKEN)
+# This ensures the private repo is accessible during the build
 RUN git clone https://$GH_TOKEN@github.com/aolabsai/ao_core.git /app/ao_core
 
-# Copy the requirements file into the container
-COPY requirements.txt /app/
+# Clone the ao_arch repository (if needed)
+RUN pip install git+https://github.com/aolabsai/ao_arch.git@core_feature/Qaxuillary
 
-# Install the Python dependencies
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Copy the rest of your application code
-COPY . /app/
-
-# Set the command to run your app using Gunicorn
-CMD ["gunicorn", "Backend:app"]
-
-# Expose the port that Gunicorn will listen on
+# Expose the port for the backend (e.g., Gunicorn's default is 8000)
 EXPOSE 8000
+
+# Optional: health check to ensure the backend is running
+HEALTHCHECK CMD curl --fail http://localhost:8000/health || exit 1
+
+# Use Gunicorn to run the backend app (Replace `Backend:app` with the appropriate module and app instance)
+ENTRYPOINT ["gunicorn", "Backend:app", "--bind", "0.0.0.0:8000"]
