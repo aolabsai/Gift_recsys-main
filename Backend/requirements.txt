@@ -1,5 +1,5 @@
 
-embedding_bucketing
+git+https://github.com/Rafipilot/embedding_bucketing
 Flask
 Flask_Cors
 numpy
