@@ -1,4 +1,4 @@
-git+https://github.com/aolabsai/ao_core
+git+https://$GH_TOKEN@github.com/aolabsai/ao_core.git
 
 firebase_admin==6.6.0
 Flask==3.1.0
