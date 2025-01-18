@@ -16,7 +16,8 @@
     let email = "";
     let password = "";
     let message = '';
-    let isLoading = false
+    let isLoading = false;
+    let showrecommendationPage = false;
 
     async function fetchCountries() {
         const response = await fetch('/public/google-countries.json');
@@ -82,6 +83,29 @@
         getRecommendation();
     }
 
+    async function createNewAgent(){
+        const data = {email}
+        
+        const response = await fetch("http://127.0.0.1:5000/createNewAgent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        const res = await response.json()
+        console.log(res)
+    }
+
+    async function getAgents(){
+        const data = {email}
+        const response = await fetch("http://127.0.0.1:5000/getAgents", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        const res = await response.json()
+        console.log(res)
+    }
+
     const createAccount = async () => {
     if (password.length < 6) {
     message = "Password must be at least 6 characters long";
@@ -124,6 +148,7 @@
 };
 
 
+
     onMount(fetchCountries);
 </script>
 
@@ -138,6 +163,12 @@
         <p>{message}</p>
     {/if}
     {#if loggedin}
+        <h1>Hello</h1>
+        <button on:click={createNewAgent}>New Agent</button>
+        <button on:click={getAgents}>Retrieve Agents</button>
+
+    {/if}
+    {#if showrecommendationPage}
     <h1>Gift Recommender</h1>
     <label>Country:
         <select bind:value={selectedCountry}>

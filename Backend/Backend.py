@@ -36,7 +36,7 @@ possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewe
 
 em.config(openai_key)
 cache, bucket = em.init("embedding_cache", possible_genres)
-agent = ao.Agent(arch, "agent")
+agent = None
 
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
@@ -185,7 +185,7 @@ def login():
 @app.route("/createAccount", methods=["POST"])
 def createAccount():
     data = request.json
-    print(data)
+
     email = data.get("email")
     password = data.get("password")
     try:
@@ -196,6 +196,66 @@ def createAccount():
         return jsonify({"message": "User created, you can now log in to your account", "uid": user.uid}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+    
+
+@app.route("/createNewAgent", methods=["POST"])
+def createNewAgent():
+    data=request.json
+    email = data.get("email")
+    Agent_info={
+        "email":email
+
+    }
+    doc_ref = db.collection('Agents').add(Agent_info)
+    agent = ao.Agent(arch, "agent")
+    return jsonify({"message": "Trip saved successfully"}), 200
+
+@app.route("/getAgents", methods=["POST"])
+def getAgents():
+    print("Received request to get agents")
+    data = request.json
+    email = data.get("email")
+    
+    # Get the 'Agents' collection from Firestore
+    agents_ref = db.collection('Agents')
+    user_agents = agents_ref.where('email', '==', email).stream()
+    
+    agents_list = []
+    
+    # Loop through each agent document
+    for agent in user_agents:
+        agent_data = agent.to_dict()  # Convert the agent document to a dictionary
+        agents_list.append(agent_data)
+
+        # Get 'inputs' and 'outputs' subcollections for each agent
+        inputs_ref = agent.reference.collection('inputs').stream()
+        outputs_ref = agent.reference.collection('outputs').stream()
+        
+        inputs = []  # List to store input data for each agent
+        outputs = []  # List to store output data for each agent
+        
+        # Loop through and gather input data
+        for input_doc in inputs_ref:
+            inputs.append(input_doc.to_dict())  # Append input data
+        
+        # Loop through and gather output data
+        for output_doc in outputs_ref:
+            outputs.append(output_doc.to_dict())  # Append output data
+
+        # Add inputs and outputs to the agent data
+        agent_data['inputs'] = inputs
+        agent_data['outputs'] = outputs
+        
+        # You could choose to update the agents list with this enriched data
+        # agents_list[-1] = agent_data  # Or just append as done previously
+
+        print("Agent Data: ", agent_data)
+    
+    if not agents_list:
+        return jsonify({"message": "No agents found for this user"}), 200
+
+    return jsonify(agents_list)
+
 
 
 if __name__ == '__main__':
