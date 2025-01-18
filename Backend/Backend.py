@@ -171,7 +171,6 @@ def login():
     print(data)
     email = data.get("email")
     password = data.get("password")
-
     try:
 
         user = auth.get_user_by_email(email)
@@ -182,6 +181,21 @@ def login():
     except Exception as e:
         print("error: ",e)
         return jsonify({"error": str(e)}), 400
+    
+@app.route("/createAccount", methods=["POST"])
+def createAccount():
+    data = request.json
+    print(data)
+    email = data.get("email")
+    password = data.get("password")
+    try:
+        user = auth.get_user_by_email(email)
+        return jsonify({"message": "User already exists, try logging into your account", "uid": user.uid}), 200
+    except auth.UserNotFoundError:
+        user = auth.create_user(email=email, password=password)
+        return jsonify({"message": "User created, you can now log in to your account", "uid": user.uid}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 200
 
 
 if __name__ == '__main__':
