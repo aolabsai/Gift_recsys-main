@@ -1,7 +1,15 @@
+git+https://github.com/aolabsai/ao_core
 
-git+https://github.com/Rafipilot/embedding_bucketing
-Flask
-Flask_Cors
-numpy
-openai
+firebase_admin==6.6.0
+Flask==3.1.0
+Flask_Cors==5.0.0
+numpy==2.2.1
+openai==1.59.8
+python-dotenv==1.0.1
 gunicorn
+git+https://github.com/Rafipilot/embedding_bucketing
+
+git+https://github.com/aolabsai/ao_arch
+
+
+
