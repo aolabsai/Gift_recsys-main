@@ -17,6 +17,7 @@ from flask_cors import CORS
 from firebase_admin import credentials, auth
 import firebase_admin
 from firebase_admin import firestore
+import numpy as np
 import os
 app = Flask(__name__)
 CORS(app)
@@ -89,7 +90,9 @@ def get_random_product():
 @app.route('/agent-recommend', methods=['POST'])
 def agent_recommend():
     data = request.json
-    product_name = data.get("product_name", "")
+    product_name = data.get("product", "")["name"]
+    price = data.get("product", "").get("product_price", 0)
+    print("product: ", product_name)
     agent_in_use = data.get("agentInUse")
     email = agent_in_use[0]
     name_of_agent = agent_in_use[1]
@@ -117,6 +120,7 @@ def agent_recommend():
         agent_document_id = agent.id  
     
     if not agent_data:
+        print("Agent not found for", email, name_of_agent)
         return jsonify({"error": "Agent not found for the given email and name"}), 400
     
     print("Found agent with document ID:", agent_document_id)
@@ -138,11 +142,7 @@ def agent_recommend():
 
     print(f"Retrieved {len(inputs)} inputs and {len(outputs)} outputs.")
     
-    if not inputs:
-        return jsonify({"error": "No input data found for the given agent"}), 400
-    
-    if not outputs:
-        return jsonify({"error": "No output data found for the given agent"}), 400
+
     
 
     def convert_to_binary_array(binary_string):
@@ -216,6 +216,9 @@ def trainAgent():
     print("data: ", data)
     Label = data["Label"]
     product_name = data.get("product_name", "")
+    aiu = data["agentInUse"]
+    email = aiu[0]
+    name_of_agent = aiu[1]
     price = data.get("price", 0)
     price = str(price)
     match = re.search(r"[-+]?\d*\.\d+|\d+", price)  # Search for the number pattern
@@ -240,8 +243,26 @@ def trainAgent():
         price_binary = [1, 1]
 
     input_to_agent = np.concatenate([price_binary, genre_binary])
+    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+    
+    agent_data = None
+    agent_document_id = None
+    for agent in agent_ref:
+        agent_data = agent.to_dict()  
+        agent_document_id = agent.id  
+    inputdata = {
+        "inputs":input_to_agent.tolist()
+    }
+    outputdata= {
+        "outputs":Label
+    }
     if Label:
-        agent.next_state(input_to_agent, LABEL=Label)
+            try:
+                inputs_ref = db.collection('Agents').document(agent_document_id).collection('inputs').add(inputdata)
+                outputs_ref = db.collection('Agents').document(agent_document_id).collection('outputs').add(outputdata)
+            except Exception as e:
+                print(f"Error fetching inputs or outputs: {e}")
+                return jsonify({"error": "Error fetching data from Firestore"}), 500
     else:
         print("not label")
 

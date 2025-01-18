@@ -65,7 +65,7 @@
 
     async function trainAgentPos() {
         const Label = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-        const data = { product, Label };
+        const data = { product, Label, agentInUse};
         const response1 = await fetch("http://127.0.0.1:5000/trainAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -78,7 +78,7 @@
 
     async function trainAgentNeg() {
         const Label = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const data = { product, Label };
+        const data = { product, Label, agentInUse};
         const response1 = await fetch("http://127.0.0.1:5000/trainAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -200,6 +200,7 @@
     {#if createNewAgentPage}
     <button on:click={() => { 
         createNewAgentPage = false;
+        showrecommendationPage = false;
 
     }}>Back</button>
         <h1>Create a new agent</h1>
@@ -233,7 +234,7 @@
     <button on:click={getRecommendation}>Get Recommendation</button>
     {/if}
 
-    {#if recommendedProduct}
+    {#if recommendedProduct&&showrecommendationPage}
         <h2>Recommended Product</h2>
         <p>Name: {recommendedProduct.name}</p>
         <p>Price: {recommendedProduct.price}</p>
