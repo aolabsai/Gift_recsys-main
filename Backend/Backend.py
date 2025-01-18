@@ -82,12 +82,16 @@ def agent_recommend():
     product_name = data.get("product_name", "")
     price = data.get("price", 0)
     price = str(price)
-    match = re.search(r"[-+]?\d*\.\d+|\d+", price)  # Search for the number pattern
-    if match:
-        price = int(float(match.group()))  # Convert the matched string to a float, then to an integer
-        print(price)
+    if price:
+        match = re.search(r"[-+]?\d*\.\d+|\d+", price)  # Search for the number pattern
+        if match:
+            price = (float(match.group()))  # Convert the matched string to a float, then to an integer
+            print(price)
+        else:
+            price = int(price)
+            print("No match found")
     else:
-        print("No match found")
+        print("no price")
 
     
     cldis, genre, bucketid, genre_binary = em.auto_sort(

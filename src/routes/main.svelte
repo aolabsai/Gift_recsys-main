@@ -8,7 +8,6 @@
     let giftCategories = [];
     let recommendedProduct = null;
     let recommendationScore = null;
-    let recommendationTraining = null;
     let product = null;
 
     async function fetchCountries() {
@@ -27,6 +26,7 @@
     }
 
     async function getRecommendation() {
+        findGifts()
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
         const productResponse = await fetch("http://127.0.0.1:5000/get-product", {
             method: "POST",
@@ -100,17 +100,8 @@
     <h4>Budget</h4>
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
     <span>{budget}$</span>
-    <button on:click={findGifts}>Find Gift Categories</button>
-
-    {#if giftCategories.length > 0}
-    <h2>Gift Categories</h2>
-    <ul>
-        {#each giftCategories as category}
-            <li>{category}</li>
-        {/each}
-    </ul>
     <button on:click={getRecommendation}>Get Recommendation</button>
-{/if}
+
 
     {#if recommendedProduct}
         <h2>Recommended Product</h2>
