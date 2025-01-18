@@ -15,6 +15,8 @@
     let loggedin = false;
     let email = "";
     let password = "";
+    let message = '';
+    let isLoading = false
 
     async function fetchCountries() {
         const response = await fetch('/public/google-countries.json');
@@ -80,31 +82,47 @@
         getRecommendation();
     }
 
-    async function login() {
-        const data = { email, password };
-        const response = await fetch("http://127.0.0.1:5000/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        console.log(response)
-        if (response.status === 200) {
-            loggedin = true;
-        }
+    const createAccount = async () => {
+    if (password.length < 6) {
+    message = "Password must be at least 6 characters long";
+    return;
+  }
+    isLoading = true
+    try {
+      const response = await fetch("http://127.0.0.1:5000/createAccount", {
+        method: "POST",  
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),  
+      });
+      const data = await response.json();
+      isLoading = false
+      message = data.message;
+    } catch (error) {
+      isLoading = false;
+      message = error.response.data.error;
     }
+  };
 
-    async function createAccount() {
-        const data = { email, password };
-        const response = await fetch("http://127.0.0.1:5000/createAccount", {
-            method: "POST",
+  const login = async () => {
+    isLoading = true;
+    try {
+        const response = await fetch("http://127.0.0.1:5000/login", {
+            method: "POST",  
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
+            body: JSON.stringify({ email, password }),  
         });
-        if (response.status === 201) {
-            loggedin = true;
-        }
-        console.log(response)
+        const data = await response.json();
+        message = data.message;
+        if (response.status==200)
+            {loggedin = true;}  
+        
+    } catch (error) {
+        message = error.message || "An error occurred"; 
+    } finally {
+        isLoading = false;  
     }
+};
+
 
     onMount(fetchCountries);
 </script>
@@ -117,6 +135,7 @@
         <label>Password: <input type="text" bind:value={password}></label>
         <button on:click={login}>Continue</button>
         <button on:click={createAccount}>Create New Account</button>
+        <p>{message}</p>
     {/if}
     {#if loggedin}
     <h1>Gift Recommender</h1>
