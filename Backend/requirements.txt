@@ -1,0 +1,6 @@
+
+embedding_bucketing
+Flask
+Flask_Cors
+numpy
+openai

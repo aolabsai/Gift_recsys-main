@@ -1,0 +1,21 @@
+{
+  "name": "pricing-model-calcualtor",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.5.3",
+    "svelte": "^4.0.5",
+    "vite": "^4.5.3"
+  },
+  "dependencies": {
+    "firebase": "^10.6.0",
+    "svelte": "^4.0.5",
+    "svelte-spa-router": "^3.3.0"
+  }
+}

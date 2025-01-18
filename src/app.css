@@ -1,0 +1,141 @@
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: rgb(245, 245, 245);
+}
+
+main {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+}
+
+
+#TLGLOGO{
+  width: 150px;
+  float: right;
+  padding: 10px;
+}
+
+#linkcont{
+  align-self: center;
+}
+
+@media (max-width: 423px) {
+  #linkcont{
+    align-self: unset;
+    padding-top: 0.5rem;
+  }
+}
+
+
+
+
+
+
+
+
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+#links{
+  text-decoration: none;
+  font-size: large;
+  line-height: 2em;
+  margin-left: 2rem;
+  color: rgb(0, 0, 0);
+}
+
+
+@media (max-width: 600px) {
+  #links{
+    line-height: 1em;
+    font-size: 1rem;
+    margin-left: 0.5rem;
+  }
+
+}
+
+
+
+
+@media (max-width: 720px) {
+  p{
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  h2 {
+    font-size: 0.8rem;
+  }
+
+  label{
+    font-size: 0.8rem;
+  }
+}
+
+
+@media (max-width: 536px) {
+
+
+  h2 {
+    font-size: 0.6rem;
+  }
+
+
+}
+
+/* Style the form container */
+
+
+/* Style labels */
+
+
+nav {
+  background-color: #ffffff;
+  position: fixed;
+  width: 100%;
+  left: 0;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  top: 0; /* Adjust this value as needed */
+}
+
+
+@media (max-width: 600px) {
+  input{
+    width: 50vw;
+  }  
+}
+
+
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: 2px solid #3498db;
+  border-radius: 5px;
+  background-color: #3498db;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* Change button styles on hover */
+button:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+
+
+
+
