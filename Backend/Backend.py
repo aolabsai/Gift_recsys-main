@@ -7,15 +7,25 @@ import numpy as np
 import http.client
 from urllib.parse import quote
 
-from config import openai_key, Rapid_key
+from config import openai_key, Rapid_key, firebase_sdk
 import embedding_bucketing.embedding_model_test as em
 import ao_core as ao
 
 from Arch__giftrecommender import arch
 from flask_cors import CORS
 
+from firebase_admin import credentials, auth
+import firebase_admin
+from firebase_admin import firestore
+import os
 app = Flask(__name__)
 CORS(app)
+
+
+cred = credentials.Certificate(firebase_sdk)
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 with open("google-countries.json") as f:
     country_data = json.load(f)
@@ -154,6 +164,24 @@ def trainAgent():
     "response": "200",
 
     })
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    print(data)
+    email = data.get("email")
+    password = data.get("password")
+
+    try:
+
+        user = auth.get_user_by_email(email)
+        return jsonify({"message": f"Hello {user.email}", "uid": user.uid}), 200
+    except auth.UserNotFoundError:
+        print("error: User not found ")
+        return jsonify({"error": "User not found, try registering your account first"}), 400
+    except Exception as e:
+        print("error: ",e)
+        return jsonify({"error": str(e)}), 400
 
 
 if __name__ == '__main__':

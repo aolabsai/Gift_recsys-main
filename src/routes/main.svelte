@@ -11,6 +11,10 @@
     let product = null;
     let genre = null;
 
+    let loggedin = false
+    let email = ""
+    let password = ""
+
     async function fetchCountries() {
         const response = await fetch('/public/google-countries.json');
         countries = await response.json();
@@ -67,7 +71,6 @@
     async function  trainAgentNeg() {
         const Label = [0,0,0,0,0,0,0,0,0,0]
         const data = { product, Label };
-        console.log("data:", data)
         const response1 = await fetch("http://127.0.0.1:5000/trainAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -78,11 +81,31 @@
         getRecommendation()
     }
 
+    async function login() {
+        const data = {email, password}
+        const response = await fetch("http://127.0.0.1:5000/login", {
+            method:"POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        if (response.status === 200) {
+        loggedin = true;
+    }
 
+
+        
+    }
     onMount(fetchCountries);
 </script>
 
 <main>
+    {#if !loggedin}
+        <h1>Log In</h1>
+        <label>Email: <input type="email" bind:value={email}></label>
+        <label>Password: <input type="text" bind:value={password}></label>
+        <button on:click={login}>Continue</button>
+    {/if}
+    {#if loggedin}
     <h1>Gift Recommender</h1>
     <label>Country:
         <select bind:value={selectedCountry}>
@@ -104,7 +127,7 @@
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
     <span>{budget}$</span>
     <button on:click={getRecommendation}>Get Recommendation</button>
-
+    {/if}
 
     {#if recommendedProduct}
         <h2>Recommended Product</h2>
