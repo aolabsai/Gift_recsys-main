@@ -30,7 +30,7 @@
     }
 
     async function findGifts() {
-        const response = await fetch("https://gift-recommender-backend.onrender.com/get-gift-categories", {
+        const response = await fetch("http://127.0.0.1:5000/get-gift-categories", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ age, gender, budget }),
@@ -42,7 +42,7 @@
     async function getRecommendation() {
         findGifts();
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch("https://gift-recommender-backend.onrender.com/get-product", {
+        const productResponse = await fetch("http://127.0.0.1:5000/get-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: searchTerm, budget }),
@@ -52,7 +52,7 @@
         recommendedProduct = product;
         
         const data = {product, agentInUse}
-        const agentResponse = await fetch("https://gift-recommender-backend.onrender.com/agent-recommend", {
+        const agentResponse = await fetch("http://127.0.0.1:5000/agent-recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -66,7 +66,7 @@
     async function trainAgentPos() {
         const Label = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
         const data = { product, Label, agentInUse};
-        const response1 = await fetch("https://gift-recommender-backend.onrender.com/trainAgent", {
+        const response1 = await fetch("http://127.0.0.1:5000/trainAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -79,7 +79,7 @@
     async function trainAgentNeg() {
         const Label = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         const data = { product, Label, agentInUse};
-        const response1 = await fetch("https://gift-recommender-backend.onrender.com/trainAgent", {
+        const response1 = await fetch("http://127.0.0.1:5000/trainAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -92,7 +92,7 @@
     async function createNewAgent(){
         const data = {email, newAgentName}
         
-        const response = await fetch("https://gift-recommender-backend.onrender.com/createNewAgent", {
+        const response = await fetch("http://127.0.0.1:5000/createNewAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -103,7 +103,7 @@
 
     async function getAgents(){
         const data = {email}
-        const response = await fetch("https://gift-recommender-backend.onrender.com/getAgents", {
+        const response = await fetch("http://127.0.0.1:5000/getAgents", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -126,7 +126,7 @@
   }
     isLoading = true
     try {
-      const response = await fetch("https://gift-recommender-backend.onrender.com/createAccount", {
+      const response = await fetch("http://127.0.0.1:5000/createAccount", {
         method: "POST",  
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),  
@@ -143,7 +143,7 @@
   const login = async () => {
     isLoading = true;
     try {
-        const response = await fetch("https://gift-recommender-backend.onrender.com/login", {
+        const response = await fetch("http://127.0.0.1:5000/login", {
             method: "POST",  
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),  
@@ -180,7 +180,7 @@
         <h1>Hello</h1>
         <button on:click={() => { 
             createNewAgentPage = true;
-        }}>New Agent</button>
+        }}>Create a New Agent</button>
         <button on:click={getAgents}>Retrieve Agents</button>
 
     {/if}
@@ -188,12 +188,12 @@
         <h2>Choose an Agent</h2>
         <div class="agent-list">
             {#each agents as agent}
-
+                <div class="select_agents">
                     <button on:click={() => { 
                         showrecommendationPage = true;
                         updateAgentInUse(agent.email, agent.name)
                     }}>{agent.name}</button>
-
+                </div>
             {/each}
         </div>
     {/if}

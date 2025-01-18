@@ -72,7 +72,7 @@ def get_random_product():
 
     conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
     headers = {
-        'x-rapidapi-key': Rapid_key,
+        'x-rapidapi-key': rapid_key,
         'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
     }
     conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price=5&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
