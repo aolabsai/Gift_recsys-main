@@ -22,7 +22,7 @@ with open("google-countries.json") as f:
 
 client = OpenAI(api_key=openai_key)
 
-possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Gift Card"]
+possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Gift Card", "Dolls"]
 
 em.config(openai_key)
 cache, bucket = em.init("embedding_cache", possible_genres)

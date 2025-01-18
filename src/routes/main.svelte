@@ -9,6 +9,7 @@
     let recommendedProduct = null;
     let recommendationScore = null;
     let product = null;
+    let genre = null;
 
     async function fetchCountries() {
         const response = await fetch('/public/google-countries.json');
@@ -43,7 +44,9 @@
             body: JSON.stringify(product),
         });
         const agentData = await agentResponse.json();
+        console.log("agentdata:, ",  agentData)
         recommendationScore = agentData.recommendation_score;
+        genre = agentData.genre;
     }
 
     async function trainAgentPos() {
@@ -107,6 +110,7 @@
         <h2>Recommended Product</h2>
         <p>Name: {recommendedProduct.name}</p>
         <p>Price: {recommendedProduct.price}</p>
+        <p>Genre: {genre}</p>
         <img src={recommendedProduct.photo} alt={recommendedProduct.name} />
         <p>Recommendation Score: {recommendationScore}%</p>
 
