@@ -334,7 +334,7 @@ def createNewAgent():
 def getAgents():
     print("Received request to get agents")
     data = request.json
-    email = data.get("email")
+    email = data.get("email").lower()
     
     # Get the 'Agents' collection from Firestore
     agents_ref = db.collection('Agents')
