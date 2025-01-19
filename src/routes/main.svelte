@@ -188,7 +188,7 @@
         <button on:click={getAgents}>Retrieve Agents</button>
 
     {/if}
-    {#if agents.length > 0}
+    {#if (agents.length > 0) && !createNewAgentPage}
         <h2>Choose an Agent</h2>
         <div class="agent-list">
             {#each agents as agent}
