@@ -24,6 +24,12 @@ CORS(app)
 
 load_dotenv()
 
+if arch:
+    print("sucessfully import arch")
+    print(arch)
+else:
+    print("arch not found error")
+
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
