@@ -53,7 +53,7 @@
         
         const data = {product, agentInUse}
         console.log("calling agent recommend")
-        const agentResponse = await fetch("http://127.0.0.1:5000/agent-recommend", {
+        const agentResponse = await fetch("https://gift-recsys.onrender.com/agent-recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
