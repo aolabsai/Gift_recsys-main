@@ -10,7 +10,7 @@ python-dotenv==1.0.1
 gunicorn
 git+https://github.com/Rafipilot/embedding_bucketing
 
-#git+https://github.com/aolabsai/ao_arch
+git+https://github.com/aolabsai/ao_arch
 
 
 
