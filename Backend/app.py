@@ -231,7 +231,7 @@ def trainAgent():
     Label = data["Label"]
     product_name = data.get("product_name", "")
     aiu = data["agentInUse"]
-    email = aiu[0]
+    email = aiu[0].lower()
     name_of_agent = aiu[1]
     price = data.get("price", 0)
     price = str(price)
@@ -321,7 +321,7 @@ def createAccount():
 @app.route("/createNewAgent", methods=["POST"])
 def createNewAgent():
     data=request.json
-    email = data.get("email")
+    email = data.get("email").lower()
     agent_name = data.get("newAgentName")
     Agent_info={
         "email":email,
