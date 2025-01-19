@@ -30,7 +30,7 @@
     }
 
     async function findGifts() {
-        const response = await fetch("http://10.217.143.178:5000/get-gift-categories", {
+        const response = await fetch("https://gift-recsys.onrender.com/get-gift-categories", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ age, gender, budget }),
@@ -42,7 +42,7 @@
     async function getRecommendation() {
         findGifts();
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch("http://10.217.143.178:5000/get-product", {
+        const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: searchTerm, budget }),
@@ -52,7 +52,7 @@
         recommendedProduct = product;
         
         const data = {product, agentInUse}
-        const agentResponse = await fetch("http://10.217.143.178:5000/agent-recommend", {
+        const agentResponse = await fetch("https://gift-recsys.onrender.com/agent-recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -66,7 +66,7 @@
     async function trainAgentPos() {
         const Label = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
         const data = { product, Label, agentInUse};
-        const response1 = await fetch("http://10.217.143.178:5000/trainAgent", {
+        const response1 = await fetch("https://gift-recsys.onrender.com/trainAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -79,7 +79,7 @@
     async function trainAgentNeg() {
         const Label = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         const data = { product, Label, agentInUse};
-        const response1 = await fetch("http://10.217.143.178:5000/trainAgent", {
+        const response1 = await fetch("https://gift-recsys.onrender.com/trainAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -92,7 +92,7 @@
     async function createNewAgent(){
         const data = {email, newAgentName}
         
-        const response = await fetch("http://10.217.143.178:5000/createNewAgent", {
+        const response = await fetch("https://gift-recsys.onrender.com/createNewAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -103,7 +103,7 @@
 
     async function getAgents(){
         const data = {email}
-        const response = await fetch("http://10.217.143.178:5000/getAgents", {
+        const response = await fetch("https://gift-recsys.onrender.com/getAgents", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -126,7 +126,7 @@
   }
     isLoading = true
     try {
-      const response = await fetch("http://10.217.143.178:5000/createAccount", {
+      const response = await fetch("https://gift-recsys.onrender.com/createAccount", {
         method: "POST",  
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),  
@@ -143,7 +143,7 @@
   const login = async () => {
     isLoading = true;
     try {
-        const response = await fetch("http://127.0.0.1:5000/login", {
+        const response = await fetch("https://gift-recsys.onrender.com/login", {
             method: "POST",  
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),  

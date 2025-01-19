@@ -1,11 +1,8 @@
 import requests
 import os
 
-# Define the base URL (local or deployed depending on the environment)
-# Use the 'PORT' environment variable (which Render sets) or default to 5000 for local development
-host = "http://10.217.11.42"  # Localhost for development
-port = os.getenv("PORT", 5000)  # Get the port from the environment (default to 5000)
-url = f"{host}:{port}/"  # Full URL
+url = "https://gift-recsys.onrender.com"  
+
 
 try:
     # Make a simple GET request to the Flask app
