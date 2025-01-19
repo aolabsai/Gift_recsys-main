@@ -181,7 +181,7 @@
     {/if}
     {#if loggedin && !showrecommendationPage && !createNewAgentPage}
 
-        <h1>Hello</h1>
+        <h1>Hello {email}</h1>
         <button on:click={() => { 
             createNewAgentPage = true;
         }}>Create a New Agent</button>
