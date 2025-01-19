@@ -137,7 +137,7 @@ def agent_recommend():
     print("Found agent with document ID:", agent_document_id)
     
 
-    agent = Agent(arch)  #creating ao agents
+    
     
 
     try:
@@ -171,12 +171,15 @@ def agent_recommend():
         for key, value in output_data.items():
 
             binary_outputs.append(convert_to_binary_array(value))
-    
 
-    for i in range(len(binary_outputs)):
+    agent = Agent(arch)  #creating a new ao agent
+
+    for i in range(len(binary_outputs)):    #training ao agent on all input/ output pairs to get replica of trained agent
         try:
             print(f"Training with input: {binary_inputs[i]}, output: {binary_outputs[i]}")
-            agent.next_state(INPUT=binary_inputs[i], LABEL=binary_outputs[i])
+            agent.reset_state() 
+            agent.next_state(INPUT=binary_inputs[i], LABEL=binary_outputs[i])  
+            
         except Exception as e:
             print(f"Error during next_state call: {e}")
             return jsonify({"error": "Error during agent training"}), 500
