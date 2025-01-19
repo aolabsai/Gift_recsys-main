@@ -25,7 +25,7 @@
     let agentInUse = null
 
     async function fetchCountries() {
-        const response = await fetch('/public/google-countries.json');
+        const response = await fetch('/google-countries.json');
         countries = await response.json();
     }
 
