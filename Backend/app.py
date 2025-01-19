@@ -105,7 +105,7 @@ def agent_recommend():
     price = data.get("product", "").get("product_price", 0)
     print("product: ", product_name)
     agent_in_use = data.get("agentInUse")
-    email = agent_in_use[0]
+    email = agent_in_use[0].lower()
     name_of_agent = agent_in_use[1]
     print("Agent info:", email, name_of_agent)
     
@@ -289,7 +289,7 @@ def trainAgent():
 def login():
     data = request.json
     print(data)
-    email = data.get("email")
+    email = data.get("email").lower()
     password = data.get("password")
     try:
 
@@ -306,7 +306,7 @@ def login():
 def createAccount():
     data = request.json
 
-    email = data.get("email")
+    email = data.get("email").lower()
     password = data.get("password")
     try:
         user = auth.get_user_by_email(email)
