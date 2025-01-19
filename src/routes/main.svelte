@@ -41,6 +41,7 @@
 
     async function getRecommendation() {
         findGifts();
+        isLoading = true
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
         const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
             method: "POST",
@@ -48,15 +49,16 @@
             body: JSON.stringify({ query: searchTerm, budget }),
         });
         product = await productResponse.json();
-        console.log(product);
         recommendedProduct = product;
         
         const data = {product, agentInUse}
-        const agentResponse = await fetch("https://gift-recsys.onrender.com/agent-recommend", {
+        console.log("calling agent recommend")
+        const agentResponse = await fetch("http://127.0.0.1:5000/agent-recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
+        isLoading = false
         const agentData = await agentResponse.json();
         console.log("agentdata:", agentData);
         recommendationScore = agentData.recommendation_score;
@@ -103,12 +105,14 @@
 
     async function getAgents(){
         const data = {email}
+        isLoading = true
         const response = await fetch("https://gift-recsys.onrender.com/getAgents", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
         const res = await response.json()
+        isLoading = false
         console.log(res)
         agents = res;
     }
@@ -245,4 +249,8 @@
         <button on:click={trainAgentPos}>Recommend More</button>
         <button on:click={trainAgentNeg}>Recommend Less</button>
     {/if}
+    {#if isLoading}
+    <div class="spinner"></div>
+    <p id="loading_text">Loading, this could take 1-2 minutes</p>
+  {/if}
 </main>

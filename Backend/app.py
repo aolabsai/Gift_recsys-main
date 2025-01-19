@@ -9,7 +9,7 @@ from urllib.parse import quote
 
 from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
-import ao_core as ao
+from ao_core import Agent
 
 from Arch__giftrecommender import arch
 from flask_cors import CORS
@@ -131,7 +131,7 @@ def agent_recommend():
     print("Found agent with document ID:", agent_document_id)
     
 
-    agent = ao.Agent(arch)  
+    agent = Agent(arch)  #creating ao agents
     
 
     try:
@@ -319,7 +319,6 @@ def createNewAgent():
         "name": agent_name,
     }
     doc_ref = db.collection('Agents').add(Agent_info)
-    agent = ao.Agent(arch, "agent")
     return jsonify({"message": "Trip saved successfully"}), 200
 
 @app.route("/getAgents", methods=["POST"])
