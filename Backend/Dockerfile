@@ -1,39 +1,35 @@
-# Start from Python 3.12 slim image
+# Base image with Python
 FROM python:3.12-slim
 
-# Create a directory for the app inside the container
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory in the container
 WORKDIR /app
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+# Install necessary system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install necessary dependencies like git
-RUN apt-get update && \
-    apt-get install -y git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Declare build argument for GitHub PAT
+ARG GH_TOKEN
 
-# Copy your app code into the container
-COPY . /app
-
-# Install dependencies from the requirements file
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
-
-# Clone the private repo (ao_core) using GitHub PAT (GH_TOKEN)
-# This ensures the private repo is accessible during the build
+# Clone the private repository using GitHub PAT (ensure the token is passed correctly)
 RUN git clone https://$GH_TOKEN@github.com/aolabsai/ao_core.git /app/ao_core
 
-# Clone the ao_arch repository (if needed)
-RUN pip install git+https://github.com/aolabsai/ao_arch.git@core_feature/Qaxuillary
+# Copy the application dependencies
+COPY requirements.txt /app/
 
-# Expose the port for the backend (e.g., Gunicorn's default is 8000)
-EXPOSE 8000
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Optional: health check to ensure the backend is running
-HEALTHCHECK CMD curl --fail http://localhost:8000/health || exit 1
+# Copy the application code into the container
+COPY . /app/
 
-# Use Gunicorn to run the backend app (Replace `Backend:app` with the appropriate module and app instance)
-ENTRYPOINT ["gunicorn", "Backend:app", "--bind", "0.0.0.0:8000"]
+# Expose the Flask port
+EXPOSE 5000
+
+# Run the Flask application
+CMD ["flask", "run", "--host=0.0.0.0"]
