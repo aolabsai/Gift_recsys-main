@@ -110,7 +110,14 @@ span {
   background-color: #5a6268;
 }
 
-
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 .spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);
