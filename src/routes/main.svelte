@@ -100,7 +100,20 @@
         console.log(selectedCountry)
         const data = {email, newAgentName, selectedCountry, age, gender}
         
-        const response = await fetch("https://gift-recsys.onrender.com/createNewAgent", {
+        const response = await fetch("http://127.0.0.1:5000/createNewAgent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        const res = await response.json()
+        console.log(res)
+    }
+
+    async function deleteAgent(){
+        console.log(selectedCountry)
+        const data = {agentInUse}
+        
+        const response = await fetch("http://127.0.0.1:5000/deleteAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -238,6 +251,7 @@
     <button on:click={() => { 
         showrecommendationPage = false;
     }}>Back</button>
+    <button on:click={deleteAgent}>Delete Agent</button>
     <h1>Gift Recommender</h1>
     <h4>Budget</h4>
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
