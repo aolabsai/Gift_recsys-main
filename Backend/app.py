@@ -299,6 +299,9 @@ def trainAgent():
         cache, word=product_name, max_distance=10, bucket_array=bucket,
         type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
     )
+
+    cldis_target, target, targetid, target_binary = em.auto_sort(cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4)
+
     if price < 25:
         price_binary = [0, 0]
     elif price < 50:
@@ -308,7 +311,7 @@ def trainAgent():
     else:
         price_binary = [1, 1]
 
-    input_to_agent = np.concatenate([price_binary, genre_binary])
+    input_to_agent = np.concatenate([price_binary, genre_binary, target_binary])
     agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
     
     agent_data = None
