@@ -44,7 +44,7 @@ with open("google-countries.json") as f:
 
 client = OpenAI(api_key=openai_key)
 
-possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Gift Card", "Dolls", "Purse"]
+possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Dolls", "Purse"]
 
 em.config(openai_key)
 cache, bucket = em.init("embedding_cache", possible_genres)
@@ -97,7 +97,31 @@ def get_random_product():
     data = request.json
     query = data.get("query", "")
     budget = data.get("budget", 50)
-    encoded_query = quote(query)
+
+    aiu = data["agentInUse"]
+    email = aiu[0]
+    name_of_agent = aiu[1]
+
+    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+    
+    agent_data = None
+    agent_document_id = None
+    for agent in agent_ref:
+        agent_data = agent.to_dict()  
+        agent_document_id = agent.id  
+
+    if not agent_data:
+        print("Agent not found for", email, name_of_agent)
+        return jsonify({"error": "Agent not found for the given email and name"}), 400
+    
+    print("Found agent with document ID:", agent_document_id)
+
+
+    age = db.collection('Agents').document(agent_document_id).get().to_dict().get('age')
+    gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
+
+    encoded_query = quote(query+ "for"+ gender)
+
 
     conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
     headers = {
@@ -369,12 +393,19 @@ def createNewAgent():
 
 @app.route("/deleteAgent", methods=["POST"])
 def deleteAgent():
-    data=request.json["agentInUse"]
-    email = data.get("email").lower()
-    name_of_agent = data.get("newAgentName")
+    data = request.json["agentInUse"]
+    email = data[0]
+    name_of_agent = data[1]
+
     agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
-    if agent_ref:
-        agent_ref.delete()
+    
+    found_agent = None
+    for agent in agent_ref:
+        found_agent = agent
+    
+    if found_agent:
+        # Delete the found agent document
+        found_agent.reference.delete()
         return jsonify({"message": "Agent successfully deleted"}), 200
     else:
         return jsonify({"error": "Agent not found"}), 404
