@@ -43,11 +43,15 @@ with open("google-countries.json") as f:
     country_data = json.load(f)
 
 client = OpenAI(api_key=openai_key)
+em.config(openai_key)
 
 possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Dolls", "Purse"]
+targets = ["Male", "Female","Teenagers", "Children/ Kids"]
 
-em.config(openai_key)
+
+cache_targets, bucket_targets = em.init("embedding_targets_cache", targets)
 cache, bucket = em.init("embedding_cache", possible_genres)
+
 agent = None
 
 @app.route('/get-gift-categories', methods=['POST'])
@@ -240,6 +244,11 @@ def agent_recommend():
         print(f"Error during auto_sort: {e}")
         return jsonify({"error": "Error during auto_sort processing"}), 500
     
+    try:
+        cldis_target, target, targetid, target_binary = em.auto_sort(cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4)
+    except Exception as e:
+        print(f"Error during auto_sort: {e}")
+        return jsonify({"error": "Error during auto_sort processing"}), 500
 
     if price < 25:
         price_binary = [0, 0]
@@ -250,7 +259,7 @@ def agent_recommend():
     else:
         price_binary = [1, 1]
 
-    input_to_agent = np.concatenate([price_binary, genre_binary])
+    input_to_agent = np.concatenate([price_binary, genre_binary + target_binary])
 
 
     try:
@@ -265,6 +274,7 @@ def agent_recommend():
     
     return jsonify({
         "genre": genre,
+        "target": target,
         "recommendation_score": recommendation_score
     })
 
@@ -382,12 +392,11 @@ def createNewAgent():
         "age": age,
         "gender": gender,
     }
-    try:
-        check_agent = db.collection('Agents').where('email', '==', email).where('name', '==', agent_name).stream()
-    except Exception as e:
-        pass
-    if check_agent:
+    print(agent_name)
+    check_agent = db.collection('Agents').where('email', '==', email).where('name', '==', agent_name).stream()
+    if any(check_agent):
         return jsonify({"message": "Agent with this name already exists."}), 400
+
     doc_ref = db.collection('Agents').add(Agent_info)
     return jsonify({"message": "Agent Created"}), 200
 

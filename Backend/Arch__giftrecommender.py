@@ -12,7 +12,7 @@ import ao_arch as ar
 description = "Basic Recommender System"
 
 #genre, length
-arch_i = [10, 2]   # genre_binary_encoding + price
+arch_i = [10, 2, 4]   # genre_binary_encoding + price + target
 arch_z = [10]           
 arch_c = []           
 connector_function = "full_conn"

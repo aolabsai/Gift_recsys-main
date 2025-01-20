@@ -11,6 +11,7 @@
     let recommendationScore = null;
     let product = null;
     let genre = null;
+    let target = null;
 
     let createNewAgentPage = false;
     let newAgentName = "";
@@ -59,7 +60,7 @@
         
         const data = {product, agentInUse}
         console.log("calling agent recommend")
-        const agentResponse = await fetch("https://gift-recsys.onrender.com/agent-recommend", {
+        const agentResponse = await fetch("http://127.0.0.1:5000/agent-recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -68,6 +69,7 @@
         const agentData = await agentResponse.json();
         console.log("agentdata:", agentData);
         recommendationScore = agentData.recommendation_score;
+        target = agentData.target;
         genre = agentData.genre;
     }
 
@@ -265,6 +267,7 @@
         <p>Name: {recommendedProduct.name}</p>
         <p>Price: {recommendedProduct.price}</p>
         <p>Genre: {genre}</p>
+        <p>Target: {target}</p>
         <img src={recommendedProduct.photo} alt={recommendedProduct.name} />
         <p>Recommendation Score: {recommendationScore}%</p>
 
