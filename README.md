@@ -1,6 +1,6 @@
-# pricing model calculator
+# Gift recommender system
 
-This calculator prices the ideal return on a deal
+Train multiple agents and come back to them
 
 
 
