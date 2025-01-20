@@ -94,7 +94,7 @@
     async function createNewAgent(){
         const data = {email, newAgentName}
         
-        const response = await fetch("https://gift-recsys.onrender.com/createNewAgent", {
+        const response = await fetch("http://127.0.0.1:5000/createNewAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -209,29 +209,30 @@
     }}>Back</button>
         <h1>Create a new agent</h1>
         <input placeholder="Agent Name" bind:value={newAgentName}>
+
         <button on:click={createNewAgent}>Create</button>
+        <label>Country:
+            <select bind:value={selectedCountry}>
+                {#each countries as country}
+                    <option value={country.country_code}>{country.country_name}</option>
+                {/each}
+            </select>
+        </label>
+        <label>Age: <input type="number" bind:value={age} min="0" max="100" /></label>
+        <label>Gender:
+            <select bind:value={gender}>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Non-binary</option>
+                <option>Prefer not to say</option>
+            </select>
+        </label>
     {/if}
     {#if showrecommendationPage}
     <button on:click={() => { 
         showrecommendationPage = false;
     }}>Back</button>
     <h1>Gift Recommender</h1>
-    <label>Country:
-        <select bind:value={selectedCountry}>
-            {#each countries as country}
-                <option value={country.country_code}>{country.country_name}</option>
-            {/each}
-        </select>
-    </label>
-    <label>Age: <input type="number" bind:value={age} min="0" max="100" /></label>
-    <label>Gender:
-        <select bind:value={gender}>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Non-binary</option>
-            <option>Prefer not to say</option>
-        </select>
-    </label>
     <h4>Budget</h4>
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
     <span>{budget}$</span>

@@ -322,10 +322,16 @@ def createAccount():
 def createNewAgent():
     data=request.json
     email = data.get("email").lower()
+    country = data.get("country")
+    age = data.get("age")
+    gender = data.get("gender")
     agent_name = data.get("newAgentName")
     Agent_info={
         "email":email,
         "name": agent_name,
+        "country": country,
+        "age": age,
+        "gender": gender,
     }
     doc_ref = db.collection('Agents').add(Agent_info)
     return jsonify({"message": "Trip saved successfully"}), 200
