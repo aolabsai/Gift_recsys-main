@@ -30,10 +30,14 @@
     }
 
     async function findGifts() {
+        let data_to_send = {
+            "agentInUse": agentInUse,
+            "budget": budget,
+        }
         const response = await fetch("https://gift-recsys.onrender.com/get-gift-categories", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ age, gender, budget }),
+            body: JSON.stringify({data_to_send}),
         });
         const data = await response.json();
         giftCategories = data.categories;
@@ -50,6 +54,7 @@
         });
         product = await productResponse.json();
         recommendedProduct = product;
+        console.log("", recommendedProduct)
         
         const data = {product, agentInUse}
         console.log("calling agent recommend")
@@ -92,7 +97,8 @@
     }
 
     async function createNewAgent(){
-        const data = {email, newAgentName}
+        console.log(selectedCountry)
+        const data = {email, newAgentName, selectedCountry, age, gender}
         
         const response = await fetch("https://gift-recsys.onrender.com/createNewAgent", {
             method: "POST",
@@ -188,7 +194,7 @@
         <button on:click={getAgents}>Retrieve Agents</button>
 
     {/if}
-    {#if (agents.length > 0) && !createNewAgentPage}
+    {#if (agents.length > 0) && !createNewAgentPage && !showrecommendationPage}
         <h2>Choose an Agent</h2>
         <div class="agent-list">
             {#each agents as agent}
@@ -209,29 +215,30 @@
     }}>Back</button>
         <h1>Create a new agent</h1>
         <input placeholder="Agent Name" bind:value={newAgentName}>
+
         <button on:click={createNewAgent}>Create</button>
+        <label>Country:
+            <select bind:value={selectedCountry}>
+                {#each countries as country}
+                    <option value={country.country_code}>{country.country_name}</option>
+                {/each}
+            </select>
+        </label>
+        <label>Age: <input type="number" bind:value={age} min="0" max="100" /></label>
+        <label>Gender:
+            <select bind:value={gender}>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Non-binary</option>
+                <option>Prefer not to say</option>
+            </select>
+        </label>
     {/if}
     {#if showrecommendationPage}
     <button on:click={() => { 
         showrecommendationPage = false;
     }}>Back</button>
     <h1>Gift Recommender</h1>
-    <label>Country:
-        <select bind:value={selectedCountry}>
-            {#each countries as country}
-                <option value={country.country_code}>{country.country_name}</option>
-            {/each}
-        </select>
-    </label>
-    <label>Age: <input type="number" bind:value={age} min="0" max="100" /></label>
-    <label>Gender:
-        <select bind:value={gender}>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Non-binary</option>
-            <option>Prefer not to say</option>
-        </select>
-    </label>
     <h4>Budget</h4>
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
     <span>{budget}$</span>

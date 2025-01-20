@@ -44,7 +44,7 @@ with open("google-countries.json") as f:
 
 client = OpenAI(api_key=openai_key)
 
-possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Gift Card", "Dolls"]
+possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Gift Card", "Dolls", "Purse"]
 
 em.config(openai_key)
 cache, bucket = em.init("embedding_cache", possible_genres)
@@ -52,10 +52,32 @@ agent = None
 
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
-    data = request.json
-    age = data.get("age", 18)
-    gender = data.get("gender", [])
-    budget = data.get("budget", 50)
+    data = request.json["data_to_send"]
+    print(data)
+    budget = data["budget"]
+    aiu = data["agentInUse"]
+    email = aiu[0]
+    name_of_agent = aiu[1]
+
+    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+    
+    agent_data = None
+    agent_document_id = None
+    for agent in agent_ref:
+        agent_data = agent.to_dict()  
+        agent_document_id = agent.id  
+
+    if not agent_data:
+        print("Agent not found for", email, name_of_agent)
+        return jsonify({"error": "Agent not found for the given email and name"}), 400
+    
+    print("Found agent with document ID:", agent_document_id)
+
+
+    age = db.collection('Agents').document(agent_document_id).get().to_dict().get('age')
+    gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
+    country = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')
+    print(age, gender, country)
     prompt = f"What are some gift categories that meet the following: age: {age}, gender: {gender}, budget: {budget}"
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -67,6 +89,7 @@ def get_gift_categories():
         temperature=0.1
     )
     gift_categories = response.choices[0].message.content.splitlines()
+    print("Gift cats: ",gift_categories) 
     return jsonify({"categories": gift_categories})
 
 @app.route('/get-product', methods=['POST'])
@@ -176,7 +199,6 @@ def agent_recommend():
 
     for i in range(len(binary_outputs)):    #training ao agent on all input/ output pairs to get replica of trained agent
         try:
-            print(f"Training with input: {binary_inputs[i]}, output: {binary_outputs[i]}")
             agent.reset_state() 
             agent.next_state(INPUT=binary_inputs[i], LABEL=binary_outputs[i])  
             
@@ -320,12 +342,21 @@ def createAccount():
 
 @app.route("/createNewAgent", methods=["POST"])
 def createNewAgent():
+    print("hello")
     data=request.json
     email = data.get("email").lower()
+    country = data.get("selectedCountry")
+    print(data)
+    print(country)
+    age = data.get("age")
+    gender = data.get("gender")
     agent_name = data.get("newAgentName")
     Agent_info={
         "email":email,
         "name": agent_name,
+        "country": country,
+        "age": age,
+        "gender": gender,
     }
     doc_ref = db.collection('Agents').add(Agent_info)
     return jsonify({"message": "Trip saved successfully"}), 200
@@ -378,5 +409,5 @@ def home():
     return "Testing"
 
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+
+    app.run(debug=True)
