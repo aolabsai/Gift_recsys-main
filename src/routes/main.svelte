@@ -33,7 +33,7 @@
         const response = await fetch("https://gift-recsys.onrender.com/get-gift-categories", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ age, gender, budget }),
+            body: JSON.stringify({agentInUse}),
         });
         const data = await response.json();
         giftCategories = data.categories;
@@ -50,6 +50,7 @@
         });
         product = await productResponse.json();
         recommendedProduct = product;
+        console.log("", recommendedProduct)
         
         const data = {product, agentInUse}
         console.log("calling agent recommend")
@@ -92,7 +93,8 @@
     }
 
     async function createNewAgent(){
-        const data = {email, newAgentName}
+        console.log(selectedCountry)
+        const data = {email, newAgentName, selectedCountry, age, gender}
         
         const response = await fetch("http://127.0.0.1:5000/createNewAgent", {
             method: "POST",
@@ -188,7 +190,7 @@
         <button on:click={getAgents}>Retrieve Agents</button>
 
     {/if}
-    {#if (agents.length > 0) && !createNewAgentPage}
+    {#if (agents.length > 0) && !createNewAgentPage && !showrecommendationPage}
         <h2>Choose an Agent</h2>
         <div class="agent-list">
             {#each agents as agent}

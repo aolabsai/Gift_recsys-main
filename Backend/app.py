@@ -53,9 +53,28 @@ agent = None
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
     data = request.json
-    age = data.get("age", 18)
-    gender = data.get("gender", [])
-    budget = data.get("budget", 50)
+    aiu = data["agentInUse"]
+    email = aiu[0]
+    name_of_agent = aiu[1]
+
+    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+    
+    agent_data = None
+    agent_document_id = None
+    for agent in agent_ref:
+        agent_data = agent.to_dict()  
+        agent_document_id = agent.id  
+
+    if not agent_data:
+        print("Agent not found for", email, name_of_agent)
+        return jsonify({"error": "Agent not found for the given email and name"}), 400
+    
+    print("Found agent with document ID:", agent_document_id)
+
+
+    age = db.collection('Agents').document(agent_document_id).doc.to_dict().get('age')
+    gender = db.collection('Agents').document(agent_document_id).doc.to_dict().get('country')
+    budget = db.collection('Agents').document(agent_document_id).doc.to_dict().get('age')
     prompt = f"What are some gift categories that meet the following: age: {age}, gender: {gender}, budget: {budget}"
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -320,9 +339,12 @@ def createAccount():
 
 @app.route("/createNewAgent", methods=["POST"])
 def createNewAgent():
+    print("hello")
     data=request.json
     email = data.get("email").lower()
-    country = data.get("country")
+    country = data.get("selectedCountry")
+    print(data)
+    print(country)
     age = data.get("age")
     gender = data.get("gender")
     agent_name = data.get("newAgentName")
@@ -385,4 +407,4 @@ def home():
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
