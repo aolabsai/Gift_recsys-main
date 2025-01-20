@@ -44,7 +44,7 @@ with open("google-countries.json") as f:
 
 client = OpenAI(api_key=openai_key)
 
-possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Gift Card", "Dolls"]
+possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Gift Card", "Dolls", "Purse"]
 
 em.config(openai_key)
 cache, bucket = em.init("embedding_cache", possible_genres)
@@ -52,7 +52,9 @@ agent = None
 
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
-    data = request.json
+    data = request.json["data_to_send"]
+    print(data)
+    budget = data["budget"]
     aiu = data["agentInUse"]
     email = aiu[0]
     name_of_agent = aiu[1]
@@ -72,9 +74,10 @@ def get_gift_categories():
     print("Found agent with document ID:", agent_document_id)
 
 
-    age = db.collection('Agents').document(agent_document_id).doc.to_dict().get('age')
-    gender = db.collection('Agents').document(agent_document_id).doc.to_dict().get('country')
-    budget = db.collection('Agents').document(agent_document_id).doc.to_dict().get('age')
+    age = db.collection('Agents').document(agent_document_id).get().to_dict().get('age')
+    gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
+    country = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')
+    print(age, gender, country)
     prompt = f"What are some gift categories that meet the following: age: {age}, gender: {gender}, budget: {budget}"
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -86,6 +89,7 @@ def get_gift_categories():
         temperature=0.1
     )
     gift_categories = response.choices[0].message.content.splitlines()
+    print("Gift cats: ",gift_categories) 
     return jsonify({"categories": gift_categories})
 
 @app.route('/get-product', methods=['POST'])
@@ -195,7 +199,6 @@ def agent_recommend():
 
     for i in range(len(binary_outputs)):    #training ao agent on all input/ output pairs to get replica of trained agent
         try:
-            print(f"Training with input: {binary_inputs[i]}, output: {binary_outputs[i]}")
             agent.reset_state() 
             agent.next_state(INPUT=binary_inputs[i], LABEL=binary_outputs[i])  
             
@@ -406,5 +409,5 @@ def home():
     return "Testing"
 
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+
+    app.run(debug=True)
