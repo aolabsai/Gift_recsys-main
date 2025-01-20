@@ -255,7 +255,7 @@ def agent_recommend():
     else:
         price_binary = [1, 1]
 
-    input_to_agent = np.concatenate([price_binary, genre_binary + target_binary])
+    input_to_agent = np.concatenate([price_binary, genre_binary, target_binary])
 
 
     try:
