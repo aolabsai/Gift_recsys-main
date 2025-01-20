@@ -358,8 +358,27 @@ def createNewAgent():
         "age": age,
         "gender": gender,
     }
+    try:
+        check_agent = db.collection('Agents').where('email', '==', email).where('name', '==', agent_name).stream()
+    except Exception as e:
+        pass
+    if check_agent:
+        return jsonify({"message": "Agent with this name already exists."}), 400
     doc_ref = db.collection('Agents').add(Agent_info)
-    return jsonify({"message": "Trip saved successfully"}), 200
+    return jsonify({"message": "Agent Created"}), 200
+
+@app.route("/deleteAgent", methods=["POST"])
+def deleteAgent():
+    data=request.json["agentInUse"]
+    email = data.get("email").lower()
+    name_of_agent = data.get("newAgentName")
+    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+    if agent_ref:
+        agent_ref.delete()
+        return jsonify({"message": "Agent successfully deleted"}), 200
+    else:
+        return jsonify({"error": "Agent not found"}), 404
+
 
 @app.route("/getAgents", methods=["POST"])
 def getAgents():
