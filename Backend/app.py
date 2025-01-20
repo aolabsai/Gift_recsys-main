@@ -24,16 +24,11 @@ CORS(app)
 
 load_dotenv()
 
-if arch:
-    print("sucessfully import arch")
-    print(arch)
-else:
-    print("arch not found error")
 
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
-print(firebase_sdk)
+
 cred = credentials.Certificate(firebase_sdk)
 firebase_admin.initialize_app(cred)
 
@@ -124,8 +119,8 @@ def get_random_product():
     age = db.collection('Agents').document(agent_document_id).get().to_dict().get('age')
     gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
 
-    encoded_query = quote(query+ "for"+ gender)
-
+    encoded_query = quote(query+ " for"+""+ gender)
+    print("Query: ", encoded_query)
 
     conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
     headers = {
@@ -137,12 +132,12 @@ def get_random_product():
     data = json.loads(res.read().decode("utf-8"))
     products = data.get("data", {}).get("products", [])
     if not products:
+        print("error: No products found")
         return jsonify({"error": "No products found"})
 
     random.shuffle(products)
     product = products[0]
     print("Product: ",product)
-    print(product)
     return jsonify({
         "name": product["product_title"],
         "price": product.get("product_original_price", 0),
@@ -152,6 +147,7 @@ def get_random_product():
 @app.route('/agent-recommend', methods=['POST'])
 def agent_recommend():
     data = request.json
+    print("data: ", data)
     product_name = data.get("product", "")["name"]
     price = data.get("product", "").get("product_price", 0)
     print("product: ", product_name)
