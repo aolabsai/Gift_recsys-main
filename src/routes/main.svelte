@@ -100,7 +100,7 @@
         console.log(selectedCountry)
         const data = {email, newAgentName, selectedCountry, age, gender}
         
-        const response = await fetch("http://127.0.0.1:5000/createNewAgent", {
+        const response = await fetch("https://gift-recsys.onrender.com/createNewAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -113,7 +113,7 @@
         console.log(selectedCountry)
         const data = {agentInUse}
         
-        const response = await fetch("http://127.0.0.1:5000/deleteAgent", {
+        const response = await fetch("https://gift-recsys.onrender.com/deleteAgent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
