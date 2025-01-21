@@ -162,6 +162,33 @@ def agent_recommend():
     name_of_agent = agent_in_use[1]
     print("Agent info:", email, name_of_agent)
 
+    ep = f"/product-details?asin={asin}&country=US"
+    conn.request("GET", ep, headers=headers)
+
+    res = conn.getresponse()
+    data_res = res.read()
+    try:
+        decoded_response = data_res.decode("utf-8")  # Decode the byte data
+        parsed_data = json.loads(decoded_response)  # Parse the JSON
+
+        # Check if the required keys exist in the parsed data
+        if "data" in parsed_data and "category_path" in parsed_data["data"]:
+            category_path = parsed_data["data"]["category_path"]
+            
+            # Check if category_path is a list and has at least one element
+            if isinstance(category_path, list) and len(category_path) > 0:
+                catagory = category_path[0].get("name", "Unknown")  # Safely extract the category name
+                print(f"Category: {catagory}")
+            else:
+                print("category_path is not a valid list or is empty.")
+        else:
+            print("Expected keys ('data' and 'category_path') are missing in the response.")
+
+    except json.JSONDecodeError as e:
+        print(f"JSON decoding error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
     # Fetch agent data
     agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
     agent_data = None
@@ -197,7 +224,7 @@ def agent_recommend():
 
     # Process product category and generate input vector
     cldis, genre, bucketid, genre_binary = em.auto_sort(
-        cache, word=product_name, max_distance=10, bucket_array=bucket,
+        cache, word=catagory, max_distance=10, bucket_array=bucket,
         type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
     )
     if price < 25:
