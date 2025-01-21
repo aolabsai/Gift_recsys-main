@@ -19,11 +19,13 @@ import firebase_admin
 from firebase_admin import firestore
 import numpy as np
 import os
+import requests
 app = Flask(__name__)
 CORS(app)
 
 load_dotenv()
 
+url = "https://api.aolabs.ai/v0dev/kennel/agent"
 
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
@@ -54,6 +56,60 @@ headers = {
     'x-rapidapi-key': rapid_key,
     'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
 }
+def listTostring(s):
+    return ''.join(map(str,s)) 
+
+def stringTolist(s):
+    return [int(i) for i in s]
+
+def trainAgentCall(Input, Label, email, name_of_agent):
+    Input = listTostring(Input)
+    Label = listTostring(Label)
+    uid = email+name_of_agent
+    payload = {
+    "kennel_id": "gift-recsys-1",  # use kennel_name entered above
+    "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
+    "INPUT": Input,  
+
+    "LABEL": Label,
+    "control": {
+        "US": True,
+        "states": 1,
+    }
+}
+
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+def agentResponse(Input, email, name_of_agent):
+
+    uid = email+name_of_agent
+    Input = listTostring(Input)
+
+    payload = {
+    "kennel_id": "gift-recsys-1",  # use kennel_name entered above
+    "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
+    "INPUT": Input,  
+
+    "control": {
+        "US": True,
+        "states": 1,
+    }
+}
+
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+    return stringTolist(response.json()["story"])
 
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
@@ -191,32 +247,8 @@ def agent_recommend():
 
     print("Category: ", catagory)
     # Fetch agent data
-    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
-    agent_data = None
-    agent_document_id = None
-    for agent in agent_ref:
-        agent_data = agent.to_dict()
-        agent_document_id = agent.id
 
-    if not agent_document_id:
-        return jsonify({"error": "Agent not found"}), 400
 
-    # Initialize AO agent
-    agent = Agent(arch)
-
-    # Fetch all training data and train the agent
-    try:
-        training_data_ref = db.collection('Agents').document(agent_document_id).collection('training_data').stream()
-        for training_data_doc in training_data_ref:
-            training_data = training_data_doc.to_dict()
-            binary_input = np.array(training_data["input"])
-            binary_output = np.array(training_data["output"])
-            agent.reset_state()
-            agent.next_state(INPUT=binary_input, LABEL=binary_output)
-    except Exception as e:
-        print(f"Error training agent: {e}")
-        return jsonify({"error": "Error training agent"}), 500
-    
     try:
         cldis_target, target, targetid, target_binary = em.auto_sort(cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4)
     except Exception as e:
@@ -241,7 +273,7 @@ def agent_recommend():
 
     # Get agent recommendation
     try:
-        response = agent.next_state(input_to_agent)
+        response = agentResponse(input_to_agent, email, name_of_agent)
         if sum(response) == 0:
             recommendation_score = 0
         else:
@@ -298,25 +330,11 @@ def trainAgent():
 
     input_to_agent = np.concatenate([price_binary, genre_binary, target_binary])
 
-    # Fetch the agent's document
-    agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
-    agent_data = None
-    agent_document_id = None
-    for agent in agent_ref:
-        agent_data = agent.to_dict()
-        agent_document_id = agent.id
 
-    if not agent_document_id:
-        return jsonify({"error": "Agent not found"}), 400
-
-    # Store the input-output pair in the 'training_data' subcollection
-    training_data = {
-        "input": input_to_agent.tolist(),
-        "output": Label
-    }
     print("Training agent with label: ", Label)
     try:
-        db.collection('Agents').document(agent_document_id).collection('training_data').add(training_data)
+        trainAgentCall(input_to_agent,Label,  email, name_of_agent)
+        print("Trainned agent")
         return jsonify({"message": "Training data saved successfully"}), 200
     except Exception as e:
         print(f"Error saving training data: {e}")
@@ -366,6 +384,7 @@ def createNewAgent():
     age = data.get("age")
     gender = data.get("gender")
     agent_name = data.get("newAgentName")
+    ##Note if we are integrating ao labs api, put the uid in the agent info so that it is stored in the database and easily accessible
     Agent_info={
         "email":email,
         "name": agent_name,

@@ -1,18 +1,27 @@
 import requests
-import os
 
-url = "https://gift-recsys.onrender.com"  
+url = "https://api.aolabs.ai/v0dev/kennel/agent"
 
+LABEL = "0000000000"
 
-try:
-    # Make a simple GET request to the Flask app
-    response = requests.get(url)
+payload = {
+    "kennel_id": "gift-recsys-1",  # use kennel_name entered above
+    "agent_id": "test123",   # enter unique user IDs here, to call a unique agent for each ID
+    "INPUT": "0000000000000000",  
 
-    # Check if the response status code is 200 (OK)
-    if response.status_code == 200:
-        print("Success! The Flask app responded correctly.")
-        print("Response text:", response.text)
-    else:
-        print(f"Failed! Received status code: {response.status_code}")
-except requests.exceptions.RequestException as e:
-    print("Error while trying to reach the Flask app:", e)
+    "LABEL": LABEL,
+    "control": {
+        "US": True,
+        "states": 1,
+    }
+}
+
+headers = {
+    "accept": "application/json",
+    "content-type": "application/json",
+    "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+
+print(response.text)
