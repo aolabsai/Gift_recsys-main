@@ -40,8 +40,8 @@ with open("google-countries.json") as f:
 client = OpenAI(api_key=openai_key)
 em.config(openai_key)
 
-possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Holidays", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Dolls", "Purse"]
-targets = ["Adult Male", "Adult Female","Female Teenager","Male Tennager", "Children/ Kids"]
+possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Dolls", "Purse"]
+targets = ["Unisex", "Adult Male", "Adult Female","Female Teenager","Male Tennager", "Children/ Kids"]
 
 
 cache_targets, bucket_targets = em.init("embedding_targets_cache", targets)
@@ -155,124 +155,38 @@ def agent_recommend():
     print("data: ", data)
     product_name = data.get("product", "")["name"]
     asin = data.get("product", "")["asin"]
-    print("asin: ", asin)
     price = data.get("product", "").get("product_price", 0)
-    print("product: ", product_name)
     agent_in_use = data.get("agentInUse")
     email = agent_in_use[0].lower()
     name_of_agent = agent_in_use[1]
     print("Agent info:", email, name_of_agent)
 
-    ep = f"/product-details?asin={asin}&country=US"
-    conn.request("GET", ep, headers=headers)
-
-    res = conn.getresponse()
-    data_res = res.read()
-    try:
-        decoded_response = data_res.decode("utf-8")  # Decode the byte data
-        parsed_data = json.loads(decoded_response)  # Parse the JSON
-
-        # Check if the required keys exist in the parsed data
-        if "data" in parsed_data and "category_path" in parsed_data["data"]:
-            category_path = parsed_data["data"]["category_path"]
-            
-            # Check if category_path is a list and has at least one element
-            if isinstance(category_path, list) and len(category_path) > 0:
-                catagory = category_path[0].get("name", "Unknown")  # Safely extract the category name
-                print(f"Category: {catagory}")
-            else:
-                print("category_path is not a valid list or is empty.")
-        else:
-            print("Expected keys ('data' and 'category_path') are missing in the response.")
-
-    except json.JSONDecodeError as e:
-        print(f"JSON decoding error: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-    
-    price = data.get("price", 0)
-    price = str(price)
-    
-    if price:
-        match = re.search(r"[-+]?\d*\.\d+|\d+", price)
-        if match:
-            price = float(match.group())
-        else:
-            price = int(price)
-    else:
-        print("No price provided.")
-    
-  
+    # Fetch agent data
     agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
-    
     agent_data = None
     agent_document_id = None
     for agent in agent_ref:
-        agent_data = agent.to_dict()  
-        agent_document_id = agent.id  
-    
-    if not agent_data:
-        print("Agent not found for", email, name_of_agent)
-        return jsonify({"error": "Agent not found for the given email and name"}), 400
-    
-    print("Found agent with document ID:", agent_document_id)
-    
+        agent_data = agent.to_dict()
+        agent_document_id = agent.id
 
-    
-    
+    if not agent_document_id:
+        return jsonify({"error": "Agent not found"}), 400
 
+    # Initialize AO agent
+    agent = Agent(arch)
+
+    # Fetch all training data and train the agent
     try:
-        inputs_ref = db.collection('Agents').document(agent_document_id).collection('inputs').stream()
-        outputs_ref = db.collection('Agents').document(agent_document_id).collection('outputs').stream()
+        training_data_ref = db.collection('Agents').document(agent_document_id).collection('training_data').stream()
+        for training_data_doc in training_data_ref:
+            training_data = training_data_doc.to_dict()
+            binary_input = np.array(training_data["input"])
+            binary_output = np.array(training_data["output"])
+            agent.reset_state()
+            agent.next_state(INPUT=binary_input, LABEL=binary_output)
     except Exception as e:
-        print(f"Error fetching inputs or outputs: {e}")
-        return jsonify({"error": "Error fetching data from Firestore"}), 500
-
-    inputs = [input_doc.to_dict() for input_doc in list(inputs_ref)]
-    outputs = [output_doc.to_dict() for output_doc in list(outputs_ref)]
-    
-
-    print(f"Retrieved {len(inputs)} inputs and {len(outputs)} outputs.")
-    
-
-    
-
-    def convert_to_binary_array(binary_string):
-        return [int(bit) for bit in binary_string]
-    
-    binary_inputs = []
-    binary_outputs = []
-    
-    for input_data in inputs:
-        for key, value in input_data.items():
-
-            binary_inputs.append(convert_to_binary_array(value))
-    
-    for output_data in outputs:
-        for key, value in output_data.items():
-
-            binary_outputs.append(convert_to_binary_array(value))
-
-    agent = Agent(arch)  #creating a new ao agent
-
-    for i in range(len(binary_outputs)):    #training ao agent on all input/ output pairs to get replica of trained agent
-        try:
-            agent.reset_state() 
-            agent.next_state(INPUT=binary_inputs[i], LABEL=binary_outputs[i])  
-            
-        except Exception as e:
-            print(f"Error during next_state call: {e}")
-            return jsonify({"error": "Error during agent training"}), 500
-
-
-    try:
-        cldis, genre, bucketid, genre_binary = em.auto_sort(
-            cache, word=catagory, max_distance=10, bucket_array=bucket,
-            type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
-        )
-    except Exception as e:
-        print(f"Error during auto_sort: {e}")
-        return jsonify({"error": "Error during auto_sort processing"}), 500
+        print(f"Error training agent: {e}")
+        return jsonify({"error": "Error training agent"}), 500
     
     try:
         cldis_target, target, targetid, target_binary = em.auto_sort(cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4)
@@ -280,6 +194,11 @@ def agent_recommend():
         print(f"Error during auto_sort: {e}")
         return jsonify({"error": "Error during auto_sort processing"}), 500
 
+    # Process product category and generate input vector
+    cldis, genre, bucketid, genre_binary = em.auto_sort(
+        cache, word=product_name, max_distance=10, bucket_array=bucket,
+        type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
+    )
     if price < 25:
         price_binary = [0, 0]
     elif price < 50:
@@ -291,17 +210,17 @@ def agent_recommend():
 
     input_to_agent = np.concatenate([price_binary, genre_binary, target_binary])
 
-
+    # Get agent recommendation
     try:
         response = agent.next_state(input_to_agent)
-        if sum(response) ==0:
+        if sum(response) == 0:
             recommendation_score = 0
         else:
             recommendation_score = (sum(response) / len(response)) * 100
     except Exception as e:
-        print(f"Error during agent recommendation: {e}")
-        return jsonify({"error": "Error during recommendation calculation"}), 500
-    
+        print(f"Error during recommendation: {e}")
+        return jsonify({"error": "Error during recommendation"}), 500
+
     return jsonify({
         "genre": genre,
         "target": target,
@@ -313,29 +232,32 @@ def agent_recommend():
 @app.route('/trainAgent', methods=["POST"])
 def trainAgent():
     data = request.json
-    print("data: ", data)
     Label = data["Label"]
+    print("training agent: ", Label)
     product_name = data.get("product_name", "")
     aiu = data["agentInUse"]
     email = aiu[0].lower()
     name_of_agent = aiu[1]
     price = data.get("price", 0)
     price = str(price)
-    match = re.search(r"[-+]?\d*\.\d+|\d+", price)  # Search for the number pattern
+    match = re.search(r"[-+]?\d*\.\d+|\d+", price)  
     if match:
-        price = int(float(match.group()))  # Convert the matched string to a float, then to an integer
+        price = int(float(match.group()))  
         print(price)
     else:
         print("No match found")
 
-    
+    #embedding bucketing
     cldis, genre, bucketid, genre_binary = em.auto_sort(
         cache, word=product_name, max_distance=10, bucket_array=bucket,
         type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
     )
+    cldis_target, target, targetid, target_binary = em.auto_sort(
+        cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets,
+        type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4
+    )
 
-    cldis_target, target, targetid, target_binary = em.auto_sort(cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4)
-
+    # Price encoding
     if price < 25:
         price_binary = [0, 0]
     elif price < 50:
@@ -346,33 +268,30 @@ def trainAgent():
         price_binary = [1, 1]
 
     input_to_agent = np.concatenate([price_binary, genre_binary, target_binary])
+
+    # Fetch the agent's document
     agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
-    
     agent_data = None
     agent_document_id = None
     for agent in agent_ref:
-        agent_data = agent.to_dict()  
-        agent_document_id = agent.id  
-    inputdata = {
-        "inputs":input_to_agent.tolist()
-    }
-    outputdata= {
-        "outputs":Label
-    }
-    if Label:
-            try:
-                inputs_ref = db.collection('Agents').document(agent_document_id).collection('inputs').add(inputdata)
-                outputs_ref = db.collection('Agents').document(agent_document_id).collection('outputs').add(outputdata)
-            except Exception as e:
-                print(f"Error fetching inputs or outputs: {e}")
-                return jsonify({"error": "Error fetching data from Firestore"}), 500
-    else:
-        print("not label")
+        agent_data = agent.to_dict()
+        agent_document_id = agent.id
 
-    return jsonify({
-    "response": "200",
+    if not agent_document_id:
+        return jsonify({"error": "Agent not found"}), 400
 
-    })
+    # Store the input-output pair in the 'training_data' subcollection
+    training_data = {
+        "input": input_to_agent.tolist(),
+        "output": Label
+    }
+    print("Training agent with label: ", Label)
+    try:
+        db.collection('Agents').document(agent_document_id).collection('training_data').add(training_data)
+        return jsonify({"message": "Training data saved successfully"}), 200
+    except Exception as e:
+        print(f"Error saving training data: {e}")
+        return jsonify({"error": "Error saving training data"}), 500
 
 @app.route("/login", methods=["POST"])
 def login():
