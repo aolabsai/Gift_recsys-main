@@ -9,9 +9,7 @@ from urllib.parse import quote
 
 from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
-from ao_core import Agent
 
-from Arch__giftrecommender import arch
 from flask_cors import CORS
 
 from firebase_admin import credentials, auth
