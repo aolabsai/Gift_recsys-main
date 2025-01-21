@@ -37,7 +37,7 @@
             "agentInUse": agentInUse,
             "budget": budget,
         }
-        const response = await fetch("http://127.0.0.1:5000/get-gift-categories", {
+        const response = await fetch("https://gift-recsys.onrender.com/get-gift-categories", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({data_to_send}),
@@ -51,7 +51,7 @@
         isLoading = true
         
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch("http://127.0.0.1:5000/get-product", {
+        const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: searchTerm, budget, agentInUse }),
