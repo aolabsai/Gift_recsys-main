@@ -25,6 +25,8 @@
     let agents = [];
     let agentInUse = null
 
+
+
     async function fetchCountries() {
         const response = await fetch('/google-countries.json');
         countries = await response.json();
@@ -49,7 +51,7 @@
         isLoading = true
         
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
+        const productResponse = await fetch("http://127.0.0.1:5000/get-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: searchTerm, budget, agentInUse }),

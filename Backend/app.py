@@ -49,6 +49,12 @@ cache, bucket = em.init("embedding_cache", possible_genres)
 
 agent = None
 
+conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
+headers = {
+    'x-rapidapi-key': rapid_key,
+    'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
+}
+
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
     data = request.json["data_to_send"]
@@ -117,16 +123,14 @@ def get_random_product():
 
 
     age = db.collection('Agents').document(agent_document_id).get().to_dict().get('age')
-    gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
+    gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')
 
-    encoded_query = quote(query+ " for"+""+ gender)
+    query = re.sub(r'^\d+\.\s*', '', query).strip()
+    encoded_query = quote(query)
+    encoded_query = (encoded_query+"%20for"+"%20"+ gender)
+    
     print("Query: ", encoded_query)
 
-    conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
-    headers = {
-        'x-rapidapi-key': rapid_key,
-        'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
-    }
     conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price=5&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
     res = conn.getresponse()
     data = json.loads(res.read().decode("utf-8"))
@@ -139,6 +143,7 @@ def get_random_product():
     product = products[0]
     print("Product: ",product)
     return jsonify({
+        "asin": product["asin"],
         "name": product["product_title"],
         "price": product.get("product_original_price", 0),
         "photo": product.get("product_photo", "none")
@@ -149,12 +154,41 @@ def agent_recommend():
     data = request.json
     print("data: ", data)
     product_name = data.get("product", "")["name"]
+    asin = data.get("product", "")["asin"]
+    print("asin: ", asin)
     price = data.get("product", "").get("product_price", 0)
     print("product: ", product_name)
     agent_in_use = data.get("agentInUse")
     email = agent_in_use[0].lower()
     name_of_agent = agent_in_use[1]
     print("Agent info:", email, name_of_agent)
+
+    ep = f"/product-details?asin={asin}&country=US"
+    conn.request("GET", ep, headers=headers)
+
+    res = conn.getresponse()
+    data_res = res.read()
+    try:
+        decoded_response = data_res.decode("utf-8")  # Decode the byte data
+        parsed_data = json.loads(decoded_response)  # Parse the JSON
+
+        # Check if the required keys exist in the parsed data
+        if "data" in parsed_data and "category_path" in parsed_data["data"]:
+            category_path = parsed_data["data"]["category_path"]
+            
+            # Check if category_path is a list and has at least one element
+            if isinstance(category_path, list) and len(category_path) > 0:
+                catagory = category_path[0].get("name", "Unknown")  # Safely extract the category name
+                print(f"Category: {catagory}")
+            else:
+                print("category_path is not a valid list or is empty.")
+        else:
+            print("Expected keys ('data' and 'category_path') are missing in the response.")
+
+    except json.JSONDecodeError as e:
+        print(f"JSON decoding error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
     
     price = data.get("price", 0)
     price = str(price)
@@ -233,7 +267,7 @@ def agent_recommend():
 
     try:
         cldis, genre, bucketid, genre_binary = em.auto_sort(
-            cache, word=product_name, max_distance=10, bucket_array=bucket,
+            cache, word=catagory, max_distance=10, bucket_array=bucket,
             type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
         )
     except Exception as e:
