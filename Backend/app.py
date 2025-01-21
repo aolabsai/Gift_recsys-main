@@ -40,7 +40,7 @@ with open("google-countries.json") as f:
 client = OpenAI(api_key=openai_key)
 em.config(openai_key)
 
-possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Dolls", "Purse"]
+possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Dolls", "Purse", "Wallet"]
 targets = ["Unisex", "Adult Male", "Adult Female","Female Teenager","Male Tennager", "Children/ Kids"]
 
 
