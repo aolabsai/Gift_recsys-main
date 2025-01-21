@@ -189,6 +189,7 @@ def agent_recommend():
     except Exception as e:
         print(f"Unexpected error: {e}")
 
+    print("Category: ", catagory)
     # Fetch agent data
     agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
     agent_data = None
