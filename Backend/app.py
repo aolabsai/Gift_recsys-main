@@ -83,7 +83,7 @@ def get_gift_categories():
     gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
     country = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')
     print(age, gender, country)
-    prompt = f"What are some gift categories that meet the following: age: {age}, gender: {gender}, budget: {budget}"
+    prompt = f"What are some gift categories from amazon that meet the following: age: {age}, gender: {gender}, budget: {budget}"
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -102,6 +102,7 @@ def get_random_product():
     data = request.json
     query = data.get("query", "")
     budget = data.get("budget", 50)
+    min_price = int(budget)*0.5
 
     aiu = data["agentInUse"]
     email = aiu[0]
@@ -131,7 +132,7 @@ def get_random_product():
     
     print("Query: ", encoded_query)
 
-    conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price=5&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
+    conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price={min_price}&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
     res = conn.getresponse()
     data = json.loads(res.read().decode("utf-8"))
     products = data.get("data", {}).get("products", [])
@@ -145,7 +146,7 @@ def get_random_product():
     return jsonify({
         "asin": product["asin"],
         "name": product["product_title"],
-        "price": product.get("product_original_price", 0),
+        "price": product.get("product_price", 0),
         "photo": product.get("product_photo", "none")
     })
 
