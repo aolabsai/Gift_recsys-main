@@ -192,23 +192,33 @@ def get_random_product():
     
     print("Query: ", encoded_query)
 
-    conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price={min_price}&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
-    res = conn.getresponse()
-    data = json.loads(res.read().decode("utf-8"))
-    products = data.get("data", {}).get("products", [])
-    if not products:
-        print("error: No products found")
-        return jsonify({"error": "No products found"})
+    for i in range(3):
+        try:
+            conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price={min_price}&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
+            res = conn.getresponse()
+            data = json.loads(res.read().decode("utf-8"))
+            products = data.get("data", {}).get("products", [])
+            if not products:
+                print("error: No products found")
+                return jsonify({"error": "No products found"})
 
-    random.shuffle(products)
-    product = products[0]
-    print("Product: ",product)
-    return jsonify({
-        "asin": product["asin"],
-        "name": product["product_title"],
-        "price": product.get("product_price", 0),
-        "photo": product.get("product_photo", "none")
-    })
+            random.shuffle(products)
+            product = products[0]
+            print("Product: ",product)
+            return jsonify({
+                "asin": product["asin"],
+                "name": product["product_title"],
+                "price": product.get("product_price", 0),
+                "photo": product.get("product_photo", "none")
+            })
+        except http.client.RemoteDisconnected:
+            print("Remote server disconnected. Retrying...")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return jsonify({"error": "An unexpected error occurred"}), 500
+
+    return jsonify({"error": "Failed to fetch products after multiple retries"}), 500
+    
 
 @app.route('/agent-recommend', methods=['POST'])
 def agent_recommend():
