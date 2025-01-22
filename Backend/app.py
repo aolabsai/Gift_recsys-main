@@ -42,8 +42,9 @@ em.config(openai_key)
 
 possible_genres = ["Clothes", "Electronics", "Books For Children", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Books For Teenagers", "Drama Book", "Science Fiction Books", "Romance Books", "Dolls", "Purse", "Wallet"]
 targets = ["Unisex", "Adult Male", "Adult Female","Female Teenager","Male Tennager", "Children/ Kids"]
+##TODO add more types
 
-
+#init embedding bucketing
 cache_targets, bucket_targets = em.init("embedding_targets_cache", targets)
 cache, bucket = em.init("embedding_cache", possible_genres)
 
@@ -64,6 +65,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     Input = listTostring(Input)
     Label = listTostring(Label)
     uid = email+name_of_agent
+    print("training agent with uid", uid)
     payload = {
     "kennel_id": "gift-recsys-1",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
@@ -88,7 +90,7 @@ def agentResponse(Input, email, name_of_agent):
 
     uid = email+name_of_agent
     Input = listTostring(Input)
-
+    print("calling agent with uid: ", uid)
     payload = {
     "kennel_id": "gift-recsys-1",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
