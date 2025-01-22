@@ -64,6 +64,7 @@ def stringTolist(s):
 def trainAgentCall(Input, Label, email, name_of_agent):
     Input = listTostring(Input)
     Label = listTostring(Label)
+    email = email.lower()
     uid = email+name_of_agent
     print("training agent with uid", uid)
     payload = {
@@ -88,6 +89,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     print("Agent response: ", response.json())
 
 def agentResponse(Input, email, name_of_agent):
+    email = email.lower()
 
     uid = email+name_of_agent
     Input = listTostring(Input)
