@@ -12,6 +12,7 @@
     let product = null;
     let genre = null;
     let target = null;
+    let occasion = null;
 
     let createNewAgentPage = false;
     let newAgentName = "";
@@ -36,6 +37,7 @@
         let data_to_send = {
             "agentInUse": agentInUse,
             "budget": budget,
+            "occasion": occasion,
         }
         const response = await fetch("https://gift-recsys.onrender.com/get-gift-categories", {
             method: "POST",
@@ -54,7 +56,7 @@
         const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: searchTerm, budget, agentInUse }),
+            body: JSON.stringify({ query: searchTerm, budget, agentInUse}),
         });
         product = await productResponse.json();
         recommendedProduct = product;
@@ -262,6 +264,7 @@
     <h4>Budget</h4>
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
     <span>{budget}$</span>
+    <input type="text" placeholder="Occasion" bind:value={occasion}>
     <button on:click={getRecommendation}>Get Recommendation</button>
     {/if}
 
