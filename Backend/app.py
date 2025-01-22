@@ -41,6 +41,7 @@ client = OpenAI(api_key=openai_key)
 em.config(openai_key)
 
 possible_genres = ["Clothes", "Electronics", "Books", "Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Drama Book", "Dolls", "Purse", "Wallet"]
+
 targets = ["Unisex", "Adult Male", "Adult Female","Female Teenager","Male Tennager", "Children/ Kids"]
 ##TODO add more types
 
@@ -272,7 +273,7 @@ def agent_recommend():
 
     # Process product category and generate input vector
     cldis, genre, bucketid, genre_binary = em.auto_sort(
-        cache, word=catagory, max_distance=10, bucket_array=bucket,
+        cache, word=product_name, max_distance=10, bucket_array=bucket,
         type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
     )
     if price < 25:
