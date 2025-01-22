@@ -85,6 +85,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     }
 
     response = requests.post(url, json=payload, headers=headers)
+    print("Agent response: ", response.json())
 
 def agentResponse(Input, email, name_of_agent):
 
@@ -109,6 +110,7 @@ def agentResponse(Input, email, name_of_agent):
     }
 
     response = requests.post(url, json=payload, headers=headers)
+    print("Agent response: ", response.json())
     return stringTolist(response.json()["story"])
 
 @app.route('/get-gift-categories', methods=['POST'])
