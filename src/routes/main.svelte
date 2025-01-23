@@ -13,6 +13,7 @@
     let genre = null;
     let target = null;
     let occasion = null;
+    let extraInfo = null;
 
     let createNewAgentPage = false;
     let newAgentName = "";
@@ -107,7 +108,7 @@
 
     async function createNewAgent(){
         console.log(selectedCountry)
-        const data = {email, newAgentName, selectedCountry, age, gender}
+        const data = {email, newAgentName, selectedCountry, age, gender, extraInfo}
         
         const response = await fetch("https://gift-recsys.onrender.com/createNewAgent", {
             method: "POST",
@@ -255,6 +256,7 @@
                 <option>Prefer not to say</option>
             </select>
         </label>
+        <label>Extra Info: <input type="text" bind:value={extraInfo} /></label>
         <p>{message}</p>
     {/if}
     {#if showrecommendationPage}

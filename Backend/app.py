@@ -143,9 +143,10 @@ def get_gift_categories():
 
     age = db.collection('Agents').document(agent_document_id).get().to_dict().get('age')
     gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
-    country = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')
-    print(age, gender, country)
-    prompt = f"What are some gift categories from amazon that meet the following: age: {age}, gender: {gender}, budget: {budget}, occassion: {occassion}"
+    country = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')#
+    info_about_person = db.collection('Agents').document(agent_document_id).get().to_dict().get('extraInfo')
+    print(age, gender, country, info_about_person)
+    prompt = f"What are some gift categories from amazon that meet the following: age: {age}, gender: {gender}, budget: {budget}, occassion: {occassion}, extra info: {info_about_person}"
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -392,7 +393,6 @@ def createAccount():
 
 @app.route("/createNewAgent", methods=["POST"])
 def createNewAgent():
-    print("hello")
     data=request.json
     email = data.get("email").lower()
     country = data.get("selectedCountry")
@@ -401,6 +401,7 @@ def createNewAgent():
     age = data.get("age")
     gender = data.get("gender")
     agent_name = data.get("newAgentName")
+    extra_info = data.get("extraInfo")
     ##Note if we are integrating ao labs api, put the uid in the agent info so that it is stored in the database and easily accessible
     Agent_info={
         "email":email,
@@ -408,6 +409,7 @@ def createNewAgent():
         "country": country,
         "age": age,
         "gender": gender,
+        "extraInfo": extra_info
     }
     print(agent_name)
     check_agent = db.collection('Agents').where('email', '==', email).where('name', '==', agent_name).stream()
