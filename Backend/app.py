@@ -211,7 +211,8 @@ def get_random_product():
                 "asin": product["asin"],
                 "name": product["product_title"],
                 "price": product.get("product_price", 0),
-                "photo": product.get("product_photo", "none")
+                "photo": product.get("product_photo", "none"),
+                "link": product.get("product_url"),
             })
         except http.client.RemoteDisconnected:
             print("Remote server disconnected. Retrying...")

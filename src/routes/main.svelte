@@ -25,6 +25,7 @@
     let showrecommendationPage = false;
     let agents = [];
     let agentInUse = null
+    let link = null;
 
 
 
@@ -53,7 +54,7 @@
         isLoading = true
         
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
+        const productResponse = await fetch("https://gift-recsys.onrender.com//get-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: searchTerm, budget, agentInUse}),
@@ -64,7 +65,7 @@
         
         const data = {product, agentInUse}
         console.log("calling agent recommend")
-        const agentResponse = await fetch("https://gift-recsys.onrender.com/agent-recommend", {
+        const agentResponse = await fetch("https://gift-recsys.onrender.com//agent-recommend", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -75,6 +76,7 @@
         recommendationScore = agentData.recommendation_score;
         target = agentData.target;
         genre = agentData.genre;
+        link = recommendedProduct.link;
     }
 
     async function trainAgentPos() {
@@ -274,6 +276,7 @@
         <p>Price: {recommendedProduct.price}</p>
         <p>Genre: {genre}</p>
         <p>Target: {target}</p>
+        <a href={link}>Buy Now</a>
         <img src={recommendedProduct.photo} alt={recommendedProduct.name} />
         <p>Recommendation Score: {recommendationScore}%</p>
 

@@ -1,27 +1,14 @@
+from dotenv import load_dotenv
+import os
+import http.client
 import requests
 
-url = "https://api.aolabs.ai/v0dev/kennel/agent"
+load_dotenv()
 
-LABEL = "0000000000"
+rapid_key = os.getenv("RAPID_KEY")
 
-payload = {
-    "kennel_id": "gift-recsys-1",  # use kennel_name entered above
-    "agent_id": "test123",   # enter unique user IDs here, to call a unique agent for each ID
-    "INPUT": "0000000000000000",  
-
-    "LABEL": LABEL,
-    "control": {
-        "US": True,
-        "states": 1,
-    }
-}
-
+conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
 headers = {
-    "accept": "application/json",
-    "content-type": "application/json",
-    "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+    'x-rapidapi-key': rapid_key,
+    'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
 }
-
-response = requests.post(url, json=payload, headers=headers)
-
-print(response.text)
