@@ -27,6 +27,7 @@
     let agents = [];
     let agentInUse = null
     let link = null;
+    let season = null;
 
 
 
@@ -40,6 +41,7 @@
             "agentInUse": agentInUse,
             "budget": budget,
             "occasion": occasion,
+            "season": season
         }
         const response = await fetch("https://gift-recsys.onrender.com/get-gift-categories", {
             method: "POST",
@@ -55,7 +57,7 @@
         isLoading = true
         
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch("https://gift-recsys.onrender.com//get-product", {
+        const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: searchTerm, budget, agentInUse}),
@@ -269,6 +271,13 @@
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
     <span>{budget}$</span>
     <input type="text" placeholder="Occasion" bind:value={occasion}>
+    <label>season
+        <select bind:value={season}>
+            <option>Winter</option>
+            <option>Spring</option>
+            <option>Summer</option>
+            <option>Fall</option>
+    </label>
     <button on:click={getRecommendation}>Get Recommendation</button>
     {/if}
 

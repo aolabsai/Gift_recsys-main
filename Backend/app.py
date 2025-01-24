@@ -125,6 +125,7 @@ def get_gift_categories():
     email = aiu[0]
     name_of_agent = aiu[1]
     occassion = data["occasion"]
+    season = data["season"]
 
     agent_ref = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
     
@@ -146,7 +147,7 @@ def get_gift_categories():
     country = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')#
     info_about_person = db.collection('Agents').document(agent_document_id).get().to_dict().get('extraInfo')
     print(age, gender, country, info_about_person)
-    prompt = f"What are some gift categories from amazon that meet the following: age: {age}, gender: {gender}, budget: {budget}, occassion: {occassion}, extra info: {info_about_person}"
+    prompt = f"What are some gift categories from amazon that meet the following: age: {age}, gender: {gender}, budget: {budget}, occassion: {occassion}, season: {season} extra info: {info_about_person}"
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
