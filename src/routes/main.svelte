@@ -1,6 +1,8 @@
 <script>
     import { onMount } from "svelte";
-    
+
+    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+
     let countries = [];
     let selectedCountry = "US";
     let age = 18;
@@ -25,11 +27,9 @@
     let isLoading = false;
     let showrecommendationPage = false;
     let agents = [];
-    let agentInUse = null
+    let agentInUse = null;
     let link = null;
     let season = null;
-
-
 
     async function fetchCountries() {
         const response = await fetch('/google-countries.json');
@@ -42,11 +42,11 @@
             "budget": budget,
             "occasion": occasion,
             "season": season
-        }
-        const response = await fetch("https://gift-recsys.onrender.com/get-gift-categories", {
+        };
+        const response = await fetch(`${baseEndpoint}/get-gift-categories`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({data_to_send}),
+            body: JSON.stringify({ data_to_send }),
         });
         const data = await response.json();
         giftCategories = data.categories;
@@ -54,26 +54,26 @@
 
     async function getRecommendation() {
         findGifts();
-        isLoading = true
-        
+        isLoading = true;
+
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch("https://gift-recsys.onrender.com/get-product", {
+        const productResponse = await fetch(`${baseEndpoint}/get-product`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: searchTerm, budget, agentInUse}),
+            body: JSON.stringify({ query: searchTerm, budget, agentInUse }),
         });
         product = await productResponse.json();
         recommendedProduct = product;
-        console.log("", recommendedProduct)
-        
-        const data = {product, agentInUse}
-        console.log("calling agent recommend")
-        const agentResponse = await fetch("https://gift-recsys.onrender.com//agent-recommend", {
+        console.log("", recommendedProduct);
+
+        const data = { product, agentInUse };
+        console.log("calling agent recommend");
+        const agentResponse = await fetch(`${baseEndpoint}/agent-recommend`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        isLoading = false
+        isLoading = false;
         const agentData = await agentResponse.json();
         console.log("agentdata:", agentData);
         recommendationScore = agentData.recommendation_score;
@@ -84,8 +84,8 @@
 
     async function trainAgentPos() {
         const Label = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-        const data = { product, Label, agentInUse};
-        const response1 = await fetch("https://gift-recsys.onrender.com/trainAgent", {
+        const data = { product, Label, agentInUse };
+        const response1 = await fetch(`${baseEndpoint}/trainAgent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -97,8 +97,8 @@
 
     async function trainAgentNeg() {
         const Label = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const data = { product, Label, agentInUse};
-        const response1 = await fetch("https://gift-recsys.onrender.com/trainAgent", {
+        const data = { product, Label, agentInUse };
+        const response1 = await fetch(`${baseEndpoint}/trainAgent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -108,97 +108,95 @@
         getRecommendation();
     }
 
-    async function createNewAgent(){
-        console.log(selectedCountry)
-        const data = {email, newAgentName, selectedCountry, age, gender, extraInfo}
-        
-        const response = await fetch("https://gift-recsys.onrender.com/createNewAgent", {
+    async function createNewAgent() {
+        console.log(selectedCountry);
+        const data = { email, newAgentName, selectedCountry, age, gender, extraInfo };
+
+        const response = await fetch(`${baseEndpoint}/createNewAgent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        const res = await response.json()
-        console.log(res)
+        const res = await response.json();
+        console.log(res);
     }
 
-    async function deleteAgent(){
-        console.log(selectedCountry)
-        const data = {agentInUse}
-        
-        const response = await fetch("https://gift-recsys.onrender.com/deleteAgent", {
+    async function deleteAgent() {
+        console.log(selectedCountry);
+        const data = { agentInUse };
+
+        const response = await fetch(`${baseEndpoint}/deleteAgent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        const res = await response.json()
-        console.log(res)
+        const res = await response.json();
+        console.log(res);
     }
 
-    async function getAgents(){
-        const data = {email}
-        isLoading = true
-        const response = await fetch("https://gift-recsys.onrender.com/getAgents", {
+    async function getAgents() {
+        const data = { email };
+        isLoading = true;
+        const response = await fetch(`${baseEndpoint}/getAgents`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        const res = await response.json()
-        isLoading = false
-        console.log(res)
+        const res = await response.json();
+        isLoading = false;
+        console.log(res);
         agents = res;
     }
 
-    function updateAgentInUse(email, name){
-
-        agentInUse = [email, name]
-        console.log("Agent is use: ", agentInUse)
+    function updateAgentInUse(email, name) {
+        agentInUse = [email, name];
+        console.log("Agent is use: ", agentInUse);
     }
 
     const createAccount = async () => {
-    if (password.length < 6) {
-    message = "Password must be at least 6 characters long";
-    return;
-  }
-    isLoading = true
-    try {
-      const response = await fetch("https://gift-recsys.onrender.com/createAccount", {
-        method: "POST",  
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),  
-      });
-      const data = await response.json();
-      isLoading = false
-      message = data.message;
-    } catch (error) {
-      isLoading = false;
-      message = error.response.data.error;
-    }
-  };
+        if (password.length < 6) {
+            message = "Password must be at least 6 characters long";
+            return;
+        }
+        isLoading = true;
+        try {
+            const response = await fetch(`${baseEndpoint}/createAccount`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+            const data = await response.json();
+            isLoading = false;
+            message = data.message;
+        } catch (error) {
+            isLoading = false;
+            message = error.response.data.error;
+        }
+    };
 
-  const login = async () => {
-    isLoading = true;
-    try {
-        const response = await fetch("https://gift-recsys.onrender.com/login", {
-            method: "POST",  
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),  
-        });
-        const data = await response.json();
-        message = data.message;
-        if (response.status==200)
-            {loggedin = true;}  
-        
-    } catch (error) {
-        message = error.message || "An error occurred"; 
-    } finally {
-        isLoading = false;  
-    }
-};
-
-
+    const login = async () => {
+        isLoading = true;
+        try {
+            const response = await fetch(`${baseEndpoint}/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+            const data = await response.json();
+            message = data.message;
+            if (response.status == 200) {
+                loggedin = true;
+            }
+        } catch (error) {
+            message = error.message || "An error occurred";
+        } finally {
+            isLoading = false;
+        }
+    };
 
     onMount(fetchCountries);
 </script>
+
 
 
 <main>

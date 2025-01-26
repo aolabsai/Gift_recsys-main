@@ -43,10 +43,13 @@ em.config(openai_key)
 possible_genres = ["Clothes", "Electronics", "Books", "Children Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Drama Book", "Dolls", "Purse", "Wallet", "Chocolates"]
 
 targets = ["Unisex", "Adult Male", "Adult Female","Female Teenager","Male Tennager", "Children/ Kids"]
+
+amazon_categories = ["Clothing, Shoes & Jewelry", "Electronics", "Books", "Toys & Games", "Jewelry", "Home & Kitchen", "Beauty & Personal Care", "Sports & Outdoors", "Grocery & Gourmet Food", "Music", "Movies & TV", "Video Games", "Arts, Crafts & Sewing", "Luggage & Travel Gear", "Pet Supplies", "Health & Household", "Exercise & Fitness", "Tech", "DIY & Tools", "Gardening", "Cooking", "Crafts", "Automotive", "Outdoors", "Office Products", "School Supplies", "Baby", "Party Supplies", "Wedding Supplies", "Grooming", "Drama Books", "Dolls", "Purse", "Wallet", "Chocolates"]
 ##TODO add more types
 
 #init embedding bucketing
 cache_targets, bucket_targets = em.init("embedding_targets_cache", targets)
+cache_categories, bucket_categories = em.init("embedding_categories_cache", amazon_categories)
 cache, bucket = em.init("embedding_cache", possible_genres)
 
 agent = None
@@ -56,6 +59,8 @@ headers = {
     'x-rapidapi-key': rapid_key,
     'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
 }
+
+
 def listTostring(s):
     return ''.join(map(str,s)) 
 
@@ -69,7 +74,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     uid = email+name_of_agent
     print("training agent with uid", uid)
     payload = {
-    "kennel_id": "gift-recsys-1",  # use kennel_name entered above
+    "kennel_id": "recommender3",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
     "INPUT": Input,  
 
@@ -96,7 +101,7 @@ def agentResponse(Input, email, name_of_agent):
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
     payload = {
-    "kennel_id": "gift-recsys-1",  # use kennel_name entered above
+    "kennel_id": "recommender3",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
     "INPUT": Input,  
 
@@ -264,9 +269,10 @@ def agent_recommend():
     except Exception as e:
         print(f"Unexpected error: {e}")
 
-    print("Category: ", catagory)
+
     # Fetch agent data
 
+    cldis_category, category, categoryid, category_binary = em.auto_sort(cache_categories, word=catagory, max_distance=10, bucket_array=bucket_categories, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=5)
 
     try:
         cldis_target, target, targetid, target_binary = em.auto_sort(cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4)
@@ -279,17 +285,12 @@ def agent_recommend():
         cache, word=product_name, max_distance=10, bucket_array=bucket,
         type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
     )   #using product name here as category is way to broad, e.g wallet is clothing, Shoes & Jewelry
-    if price < 25:
-        price_binary = [0, 0]
-    elif price < 50:
-        price_binary = [0, 1]
-    elif price < 100:
-        price_binary = [1, 0]
-    else:
-        price_binary = [1, 1]
 
-    input_to_agent = np.concatenate([price_binary, genre_binary, target_binary])
-
+    input_to_agent = np.concatenate([genre_binary, target_binary, np.array(category_binary)])
+    print("Category: ", catagory)
+    print("genre: ", genre_binary)
+    print("target: ", target_binary)
+    print("Input to agent: ", input_to_agent)
     # Get agent recommendation
     try:
         response = agentResponse(input_to_agent, email, name_of_agent)
