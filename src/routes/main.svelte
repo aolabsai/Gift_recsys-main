@@ -225,7 +225,7 @@
         }}>Create a New Shopping Agent</button>
         <button on:click={getAgents}>Retrieve Agents</button>
 -->
-        <button on:click={getAgents}>Retrieve Agents</button>
+
         <div id="create_agent_page">
             <h1>Create a new agent</h1>
 
