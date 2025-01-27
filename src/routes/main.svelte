@@ -201,20 +201,58 @@
 
 <main>
     {#if !loggedin}
+    <div id="login">
         <h1>Log In</h1>
-        <label>Email: <input type="email" bind:value={email}></label>
-        <label>Password: <input type="text" bind:value={password}></label>
-        <button on:click={login}>Continue</button>
-        <button on:click={createAccount}>Create New Account</button>
-        <p>{message}</p>
+        <img id="start_page_img" src="https://s3-alpha-sig.figma.com/img/6be8/76b1/a59b0193952b1c07665ec0ef5458555a?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=a~WBMZovxZB0Sc1UUxuNdTn3sjklDGreg043~LKVo-9y17PIz2N~wrHeQX0jIBPb7988ebJ8ANk6ZWpuqYYEMiUkBTjdmakVRSF6AoyHykjyVjX0kx38VMZAu-2QFkvAX4G5IKOGagnC~pXKnfsdCp9JBxoANEb2mZE5Cut8aelKu~Y8ojo2l9uC4FEl3TdMjfBXy4qEYg5fWdRZ1ZHWYLcvo1-WYJCmmvBZsjjQ9xtO11zKl-euHxuXrKh2ugla2OsrbLmuvOneizuJv7g1lQdNcGlTIdx6Z9uuh9hTiXLptTNbuxg27IUDQi4OXn8L8EjkoslCmdN7pB8dSmIE7w__">
+        
+       
+            <label>Email: <input type="email" bind:value={email}></label>
+            <label>Password: <input type="text" bind:value={password}></label>
+            <button on:click={() => { login(); getAgents(); }}>Continue</button>
+            <button on:click={createAccount}>Create New Account</button>
+            <p>{message}</p>
+        </div>
+
     {/if}
     {#if loggedin && !showrecommendationPage && !createNewAgentPage}
-
-        <h1>Hello {email}</h1>
+        <div id="header_text">
+            <h1 id="rainbow_header">Hello, {email}.</h1>
+            <h1>Who are you shopping for today?</h1>
+        </div>
+        <!---
         <button on:click={() => { 
             createNewAgentPage = true;
-        }}>Create a New Agent</button>
+        }}>Create a New Shopping Agent</button>
         <button on:click={getAgents}>Retrieve Agents</button>
+-->
+        <button on:click={getAgents}>Retrieve Agents</button>
+        <div id="create_agent_page">
+            <h1>Create a new agent</h1>
+
+            
+            <input placeholder="Agent Name" bind:value={newAgentName}>
+
+            <button on:click={() => { createNewAgent(); getAgents(); }}>Create</button>
+            <label>Country:
+                <select bind:value={selectedCountry}>
+                    {#each countries as country}
+                        <option value={country.country_code}>{country.country_name}</option>
+                    {/each}
+                </select>
+            </label>
+            <label>Age: <input type="number" bind:value={age} min="0" max="100" /></label>
+            <label>Gender:
+                <select bind:value={gender}>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Non-binary</option>
+                    <option>Prefer not to say</option>
+                </select>
+            </label>
+            <label>Extra Info: <input type="text" bind:value={extraInfo} /></label>
+            <p>{message}</p>
+        </div>
+
 
     {/if}
     {#if (agents.length > 0) && !createNewAgentPage && !showrecommendationPage}
@@ -229,42 +267,16 @@
                 </div>
             {/each}
         </div>
-    {/if}
+    {/if}<!--
     {#if createNewAgentPage}
-    <button on:click={() => { 
-        createNewAgentPage = false;
-        showrecommendationPage = false;
 
-    }}>Back</button>
-        <h1>Create a new agent</h1>
-        <input placeholder="Agent Name" bind:value={newAgentName}>
-
-        <button on:click={createNewAgent}>Create</button>
-        <label>Country:
-            <select bind:value={selectedCountry}>
-                {#each countries as country}
-                    <option value={country.country_code}>{country.country_name}</option>
-                {/each}
-            </select>
-        </label>
-        <label>Age: <input type="number" bind:value={age} min="0" max="100" /></label>
-        <label>Gender:
-            <select bind:value={gender}>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Non-binary</option>
-                <option>Prefer not to say</option>
-            </select>
-        </label>
-        <label>Extra Info: <input type="text" bind:value={extraInfo} /></label>
-        <p>{message}</p>
-    {/if}
+    {/if}-->
     {#if showrecommendationPage}
     <button on:click={() => { 
         showrecommendationPage = false;
     }}>Back</button>
     <button on:click={deleteAgent}>Delete Agent</button>
-    <h1>Gift Recommender</h1>
+    <h1>Finding the perfect gift for: {agentInUse}</h1>
     <h4>Budget</h4>
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
     <span>{budget}$</span>
