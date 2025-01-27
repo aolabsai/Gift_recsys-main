@@ -251,16 +251,13 @@ def agent_recommend():
         decoded_response = data_res.decode("utf-8")  # Decode the byte data
         parsed_data = json.loads(decoded_response)  # Parse the JSON
 
-        # Check if the required keys exist in the parsed data
-        if "data" in parsed_data and "category_path" in parsed_data["data"]:
+        if "data" in parsed_data:
             category_path = parsed_data["data"]["category_path"]
-            
-            # Check if category_path is a list and has at least one element
-            if isinstance(category_path, list) and len(category_path) > 0:
-                catagory = category_path[0].get("name", "Unknown")  # Safely extract the category name
-                print(f"Category: {catagory}")
-            else:
-                print("category_path is not a valid list or is empty.")
+            catagory = category_path[0].get("name", "Unknown")  
+
+            brand = parsed_data["data"]["product_details"].get("brand", "Unknown")
+            print("brand:", brand)
+            print("Category: ", catagory)
         else:
             print("Expected keys ('data' and 'category_path') are missing in the response.")
 
@@ -338,17 +335,13 @@ def trainAgent():
         type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4
     )
 
-    # Price encoding
-    if price < 25:
-        price_binary = [0, 0]
-    elif price < 50:
-        price_binary = [0, 1]
-    elif price < 100:
-        price_binary = [1, 0]
-    else:
-        price_binary = [1, 1]
+    cldis_category, category, categoryid, category_binary = em.auto_sort(
+        cache_categories, word=product_name, max_distance=10, bucket_array=bucket_categories,
+        type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=5
+    )
 
-    input_to_agent = np.concatenate([price_binary, genre_binary, target_binary])
+
+    input_to_agent = np.concatenate([genre_binary, target_binary, category_binary])
 
 
     print("Training agent with label: ", Label)
