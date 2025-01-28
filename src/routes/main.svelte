@@ -298,12 +298,13 @@
 
     {#if recommendedProduct&&showrecommendationPage}
         <h2>Recommended Product</h2>
+        <img src={recommendedProduct.photo} alt={recommendedProduct.name} id="recommend_product_img" />
         <p>Name: {recommendedProduct.name}</p>
         <p>Price: {recommendedProduct.price}</p>
         <p>Genre: {genre}</p>
         <p>Target: {target}</p>
-        <a href={link}>Buy Now</a>
-        <img src={recommendedProduct.photo} alt={recommendedProduct.name} />
+        <a id="buy_now_link" href={link} target="_blank">Buy Now </a>
+        
         <p>Recommendation Score: {recommendationScore}%</p>
 
         <button on:click={trainAgentPos}>Recommend More</button>
