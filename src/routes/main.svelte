@@ -201,6 +201,7 @@
 
 
 <main>
+
     {#if !loggedin}
     <div id="login">
         <img id="start_page_img" src="https://s3-alpha-sig.figma.com/img/6be8/76b1/a59b0193952b1c07665ec0ef5458555a?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=a~WBMZovxZB0Sc1UUxuNdTn3sjklDGreg043~LKVo-9y17PIz2N~wrHeQX0jIBPb7988ebJ8ANk6ZWpuqYYEMiUkBTjdmakVRSF6AoyHykjyVjX0kx38VMZAu-2QFkvAX4G5IKOGagnC~pXKnfsdCp9JBxoANEb2mZE5Cut8aelKu~Y8ojo2l9uC4FEl3TdMjfBXy4qEYg5fWdRZ1ZHWYLcvo1-WYJCmmvBZsjjQ9xtO11zKl-euHxuXrKh2ugla2OsrbLmuvOneizuJv7g1lQdNcGlTIdx6Z9uuh9hTiXLptTNbuxg27IUDQi4OXn8L8EjkoslCmdN7pB8dSmIE7w__">
@@ -208,30 +209,39 @@
        
             <label>Email: <input type="email" bind:value={email}></label>
             <label>Password: <input type="text" bind:value={password}></label>
-            <button on:click={() => { login(); getAgents(); }}>Continue</button>
+            <button id="main_button" on:click={() => { login(); getAgents(); }}>Continue</button>
             <p>----or----</p>
-            <button on:click={createAccount}>Create New Account</button>
+            <button id="main_button" on:click={createAccount}>Create New Account</button>
             <p>{message}</p>
         </div>
 
+    {/if}
+    {#if loggedin}
+        <div id="nav">
+            <button on:click={() => { 
+                showrecommendationPage = false;
+                createNewAgentPage = false;
+                getAgents();
+            }}>Home</button>
+            <button on:click={() => { 
+                loggedin = false;
+                email = "";
+                password = "";
+                message = "";
+            }}>Logout</button>
+        </div>
     {/if}
     {#if loggedin && !showrecommendationPage && !createNewAgentPage}
         <div id="header_text">
             <h1 id="rainbow_header">Hello, {email}.</h1>
             <h1>Who are you shopping for today?</h1>
         </div>
-        <!---
-        <button on:click={() => { 
-            createNewAgentPage = true;
-        }}>Create a New Shopping Agent</button>
-        <button on:click={getAgents}>Retrieve Agents</button>
--->
 
         <div id="create_agent_page">
             <h1>Create a new agent</h1>
 
             
-            <input placeholder="Agent Name" bind:value={newAgentName}>
+            <label>Name <input placeholder="Agent Name" type="text" bind:value={newAgentName}></label>
 
             <label>Country:
                 <select bind:value={selectedCountry}>
@@ -251,12 +261,12 @@
             </label>
             <label>Extra Info: <input type="text" bind:value={extraInfo} /></label>
 
-            <button on:click={() => { createNewAgent(); }}>Create</button>
+            <button id="main_button" on:click={() => { createNewAgent(); }}>Create</button>
         </div>
 
 
     {/if}
-    {#if (agents.length > 0) && !createNewAgentPage && !showrecommendationPage}
+    {#if (agents.length > 0) && !createNewAgentPage && !showrecommendationPage && loggedin}
         <h2>Or Continue Where You Left Off</h2>
         <div class="agent-list">
             {#each agents as agent}
@@ -275,12 +285,9 @@
     {#if createNewAgentPage}
 
     {/if}-->
-    {#if showrecommendationPage}
-    <button on:click={() => { 
-        showrecommendationPage = false;
-        getAgents();
-    }}>Back</button>
-    <button on:click={deleteAgent}>Delete Agent</button>
+    {#if showrecommendationPage && loggedin}
+
+    <button id="main_button" on:click={deleteAgent}>Delete Agent</button>
     <h1>Finding the perfect gift for: {agentInUse}</h1>
     <h4>Budget</h4>
     <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
@@ -293,7 +300,7 @@
             <option>Summer</option>
             <option>Fall</option>
     </label>
-    <button on:click={getRecommendation}>Get Recommendation</button>
+    <button id="main_button" on:click={getRecommendation}>Get Recommendation</button>
     {/if}
 
     {#if recommendedProduct&&showrecommendationPage}
@@ -303,12 +310,14 @@
         <p>Price: {recommendedProduct.price}</p>
         <p>Genre: {genre}</p>
         <p>Target: {target}</p>
-        <a id="buy_now_link" href={link} target="_blank">Buy Now </a>
+
+        <div><a id="buy_now_link" href={link} target="_blank">Buy Now </a></div>
+        
         
         <p>Recommendation Score: {recommendationScore}%</p>
 
-        <button on:click={trainAgentPos}>Recommend More</button>
-        <button on:click={trainAgentNeg}>Recommend Less</button>
+        <button id="main_button" on:click={trainAgentPos}>Recommend More</button>
+        <button id="main_button" on:click={trainAgentNeg}>Recommend Less</button>
     {/if}
     {#if isLoading}
     <div class="spinner"></div>

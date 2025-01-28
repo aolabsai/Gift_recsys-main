@@ -18,6 +18,12 @@ main {
   
 }
 
+#nav {
+  padding: 1rem;
+  float: left;
+  width: 10%;
+}
+
 #header_text{
   max-width: 800px;
   margin-left: auto;
@@ -48,7 +54,7 @@ main {
   background-color: rgb(28, 102, 28);
 }
 
-button {
+#main_button {
   width: 800px;
 }
 
@@ -61,6 +67,10 @@ button {
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
+}
+
+#agent_img {
+  max-width: 200px;
 }
 
 #top_left {
@@ -119,6 +129,7 @@ button:hover {
 }
 
 .select_agents {
+  max-width: 300px;
   flex: 1 1 calc(33.333% - 1rem);
   box-sizing: border-box;
   padding: 1rem;
