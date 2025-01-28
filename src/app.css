@@ -23,9 +23,10 @@ main {
 }
 
 #login {
-  max-width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
+  width: 800px;
+}
+button {
+  width: 800px;
 }
 
 #start_page_img {
