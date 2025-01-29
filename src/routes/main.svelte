@@ -285,40 +285,46 @@
     {#if createNewAgentPage}
 
     {/if}-->
-    {#if showrecommendationPage && loggedin}
 
-    <button id="main_button" on:click={deleteAgent}>Delete Agent</button>
-    <h1>Finding the perfect gift for: {agentInUse}</h1>
-    <h4>Budget</h4>
-    <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
-    <span>{budget}$</span>
-    <input type="text" placeholder="Occasion" bind:value={occasion}>
-    <label>season
-        <select bind:value={season}>
-            <option>Winter</option>
-            <option>Spring</option>
-            <option>Summer</option>
-            <option>Fall</option>
-    </label>
-    <button id="main_button" on:click={getRecommendation}>Get Recommendation</button>
-    {/if}
+    <div id="recommendation_page"> 
+        {#if showrecommendationPage && loggedin}
 
-    {#if recommendedProduct&&showrecommendationPage}
-        <h2>Recommended Product</h2>
-        <img src={recommendedProduct.photo} alt={recommendedProduct.name} id="recommend_product_img" />
-        <p>Name: {recommendedProduct.name}</p>
-        <p>Price: {recommendedProduct.price}</p>
-        <p>Genre: {genre}</p>
-        <p>Target: {target}</p>
+        <button id="main_button" on:click={deleteAgent}>Delete Agent</button>
+        <h1>Finding the perfect gift for: {agentInUse}</h1>
+        <h4>Budget</h4>
+        <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
+        <span>{budget}$</span>
+        <input type="text" placeholder="Occasion" bind:value={occasion}>
+        <label>season
+            <select bind:value={season}>
+                <option>Winter</option>
+                <option>Spring</option>
+                <option>Summer</option>
+                <option>Fall</option>
+        </label>
+        <button id="main_button" on:click={getRecommendation}>Get Recommendation</button>
 
-        <div><a id="buy_now_link" href={link} target="_blank">Buy Now </a></div>
-        
-        
-        <p>Recommendation Score: {recommendationScore}%</p>
+        {/if}
 
-        <button id="main_button" on:click={trainAgentPos}>Recommend More</button>
-        <button id="main_button" on:click={trainAgentNeg}>Recommend Less</button>
-    {/if}
+        {#if recommendedProduct&&showrecommendationPage}
+            <h2>Recommended Product</h2>
+            <img src={recommendedProduct.photo} alt={recommendedProduct.name} id="recommend_product_img" />
+            <p>Name: {recommendedProduct.name}</p>
+            <p>Price: {recommendedProduct.price}</p>
+            <p>Genre: {genre}</p>
+            <p>Target: {target}</p>
+
+            <div><a id="buy_now_link" href={link} target="_blank">Buy Now </a></div>
+            
+            
+            <p>Recommendation Score: {recommendationScore}%</p>
+
+            <button id="main_button" on:click={trainAgentPos}>Recommend More</button>
+            <button id="main_button" on:click={trainAgentNeg}>Recommend Less</button>
+
+    
+        {/if}
+    </div>
     {#if isLoading}
     <div class="spinner"></div>
     <p id="loading_text">Loading, this could take 1-2 minutes</p>
