@@ -432,6 +432,10 @@ def deleteAgent():
         return jsonify({"message": "Agent successfully deleted"}), 200
     else:
         return jsonify({"error": "Agent not found"}), 404
+    
+    #TODO delete agent from ao labs api
+    uid = email+name_of_agent
+    
 
 
 @app.route("/getAgents", methods=["POST"])
