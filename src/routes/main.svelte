@@ -202,6 +202,7 @@
 
 <main>
 
+
     {#if !loggedin}
     <div id="login">
         <img id="start_page_img" src="https://s3-alpha-sig.figma.com/img/6be8/76b1/a59b0193952b1c07665ec0ef5458555a?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=a~WBMZovxZB0Sc1UUxuNdTn3sjklDGreg043~LKVo-9y17PIz2N~wrHeQX0jIBPb7988ebJ8ANk6ZWpuqYYEMiUkBTjdmakVRSF6AoyHykjyVjX0kx38VMZAu-2QFkvAX4G5IKOGagnC~pXKnfsdCp9JBxoANEb2mZE5Cut8aelKu~Y8ojo2l9uC4FEl3TdMjfBXy4qEYg5fWdRZ1ZHWYLcvo1-WYJCmmvBZsjjQ9xtO11zKl-euHxuXrKh2ugla2OsrbLmuvOneizuJv7g1lQdNcGlTIdx6Z9uuh9hTiXLptTNbuxg27IUDQi4OXn8L8EjkoslCmdN7pB8dSmIE7w__">
@@ -308,7 +309,12 @@
 
         {/if}
 
+        {#if isLoading}
+        <div class="spinner"></div>
+      {/if}
+
         {#if recommendedProduct&&showrecommendationPage}
+        
             <h2>Recommended Product</h2>
             <img src={recommendedProduct.photo} alt={recommendedProduct.name} id="recommend_product_img" />
             <p>Name: {recommendedProduct.name}</p>
@@ -327,7 +333,5 @@
     
         {/if}
     </div>
-    {#if isLoading}
-    <div class="spinner"></div>
-  {/if}
+ 
 </main>

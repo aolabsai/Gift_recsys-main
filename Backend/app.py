@@ -156,7 +156,7 @@ def get_gift_categories():
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "give a 5 options answer each only a couple of words long"},
+            {"role": "system", "content": "give a 5 options answer each only a couple of words long, DO NOT give books please!"}, #not using books as its terrible lol
             {"role": "user", "content": prompt}
         ],
         max_tokens=35,
@@ -278,12 +278,19 @@ def agent_recommend():
         return jsonify({"error": "Error during auto_sort processing"}), 500
 
     # Process product category and generate input vector
+    llm_output = em.llm_call(f"what category should this product be in: {product_name}")
+    print("LLM output: ", llm_output)
+
     cldis, genre, bucketid, genre_binary = em.auto_sort(
-        cache, word=product_name, max_distance=10, bucket_array=bucket,
+        cache, word=llm_output, max_distance=10, bucket_array=bucket,
         type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
     )   #using product name here as category is way to broad, e.g wallet is clothing, Shoes & Jewelry
 
     input_to_agent = np.concatenate([genre_binary, target_binary, np.array(category_binary)])
+
+    
+
+    
     print("Category: ", catagory)
     print("genre: ", genre_binary)
     print("target: ", target_binary)
@@ -435,7 +442,7 @@ def deleteAgent():
     
     #TODO delete agent from ao labs api
     uid = email+name_of_agent
-    
+
 
 
 @app.route("/getAgents", methods=["POST"])
