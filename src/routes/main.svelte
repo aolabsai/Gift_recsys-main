@@ -327,6 +327,5 @@
     </div>
     {#if isLoading}
     <div class="spinner"></div>
-    <p id="loading_text">Loading, this could take 1-2 minutes</p>
   {/if}
 </main>
