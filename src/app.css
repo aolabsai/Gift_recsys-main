@@ -210,6 +210,27 @@ span {
 .back-button:hover {
   background-color: #5a6268;
 }
+.spinner-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+  z-index: 9999; /* Ensures it appears on top of everything */
+}
+
+.spinner {
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-left-color: #4a90e2;
+  width: 80px;
+  height: 80px;
+  animation: spin 1s linear infinite;
+}
 
 @keyframes spin {
   0% {
@@ -218,14 +239,4 @@ span {
   100% {
     transform: rotate(360deg);
   }
-}
-
-.spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50%;
-  border-left-color: #4a90e2;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite;
-  margin: 20px auto;
 }

@@ -310,7 +310,9 @@
         {/if}
 
         {#if isLoading}
-        <div class="spinner"></div>
+        <div class="spinner-container">
+            <div class="spinner"></div>
+        </div>
       {/if}
 
         {#if recommendedProduct&&showrecommendationPage}
