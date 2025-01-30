@@ -15,7 +15,6 @@ main {
   padding: 20px;
 }
 
-
 #rainbow_header {
   background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
   -webkit-background-clip: text;
@@ -61,20 +60,20 @@ main {
 }
 
 #header_text{
-  max-width: 800px;
+  max-width: 53rem;
   margin-left: auto;
   margin-right: auto;
 }
 
 #login {
   text-align: center;
-  width: 800px;
+  width: 50%;
   margin-left: auto;
   margin-right: auto;
 }
 
 #recommend_product_img {
-  max-width: 800px;
+  max-width: 75%;
   max-height: 800px;
 }
 
@@ -94,16 +93,16 @@ main {
 }
 
 #main_button {
-  width: 800px;
+  width: 50%;
 }
 
 #start_page_img {
-  max-width: 800px;
+  width: 75%;
 }
 
 #create_agent_page {
   padding: 5px;
-  max-width: 800px;
+  max-width: 50%;
   margin-left: auto;
   margin-right: auto;
 }
