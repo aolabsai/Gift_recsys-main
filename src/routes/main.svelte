@@ -219,12 +219,12 @@
     {/if}
     {#if loggedin}
         <div id="nav">
-            <button on:click={() => { 
+            <button id="nav_button" on:click={() => { 
                 showrecommendationPage = false;
                 createNewAgentPage = false;
                 getAgents();
             }}>Home</button>
-            <button on:click={() => { 
+            <button id="nav_button" on:click={() => { 
                 loggedin = false;
                 email = "";
                 password = "";
