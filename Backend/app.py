@@ -18,6 +18,9 @@ from firebase_admin import firestore
 import numpy as np
 import os
 import requests
+import logging
+import time
+
 app = Flask(__name__)
 CORS(app)
 
@@ -230,85 +233,109 @@ def get_random_product():
     return jsonify({"error": "Failed to fetch products after multiple retries"}), 500
     
 
+
+logging.basicConfig(level=logging.INFO)
 @app.route('/agent-recommend', methods=['POST'])
 def agent_recommend():
     data = request.json
-    print("data: ", data)
-    product_name = data.get("product", "")["name"]
-    asin = data.get("product", "")["asin"]
-    price = data.get("product", "").get("product_price", 0)
-    agent_in_use = data.get("agentInUse")
+    logging.info(f"Received data: {data}")
+
+    # Extract product information safely
+    product_info = data.get("product", {})
+    product_name = product_info.get("name", "Unknown")
+    asin = product_info.get("asin", "")
+    price = product_info.get("product_price", 0)
+
+    # Extract agent info safely
+    agent_in_use = data.get("agentInUse", [])
+    if len(agent_in_use) < 2:
+        return jsonify({"error": "Invalid agent info"}), 400
+
     email = agent_in_use[0].lower()
     name_of_agent = agent_in_use[1]
-    print("Agent info:", email, name_of_agent)
 
+    logging.info(f"Agent info: {email}, {name_of_agent}")
+
+    # API Request Setup
     ep = f"/product-details?asin={asin}&country=US"
-    conn.request("GET", ep, headers=headers)
 
-    res = conn.getresponse()
-    data_res = res.read()
+    # Retry logic
+    for attempt in range(3):
+        try:
+            conn.request("GET", ep, headers=headers)
+            res = conn.getresponse()
+            if res.status == 200:
+                break  # Success, exit retry loop
+            else:
+                logging.warning(f"Attempt {attempt + 1}: API returned status {res.status}, retrying...")
+        except http.client.RemoteDisconnected:
+            logging.warning(f"Attempt {attempt + 1}: Remote server disconnected, retrying...")
+        time.sleep(2 ** attempt)  # Exponential backoff (2, 4, 8 sec)
+    else:
+        return jsonify({"error": "Failed to connect to product API"}), 500  # If all retries fail
+
+    # Process Response Data
     try:
-        decoded_response = data_res.decode("utf-8")  # Decode the byte data
-        parsed_data = json.loads(decoded_response)  # Parse the JSON
+        decoded_response = res.read().decode("utf-8")
+        parsed_data = json.loads(decoded_response)
 
-        if "data" in parsed_data:
-            category_path = parsed_data["data"]["category_path"]
-            catagory = category_path[0].get("name", "Unknown")  
+        # Validate response structure
+        if "data" not in parsed_data or "category_path" not in parsed_data["data"]:
+            logging.error("Unexpected response format")
+            return jsonify({"error": "Invalid API response"}), 500
 
-            brand = parsed_data["data"]["product_details"].get("brand", "Unknown")
-            print("brand:", brand)
-            print("Category: ", catagory)
-        else:
-            print("Expected keys ('data' and 'category_path') are missing in the response.")
+        category_path = parsed_data["data"]["category_path"]
+        category = category_path[0].get("name", "Unknown")
+        brand = parsed_data["data"].get("product_details", {}).get("brand", "Unknown")
+
+        logging.info(f"Brand: {brand}, Category: {category}")
 
     except json.JSONDecodeError as e:
-        print(f"JSON decoding error: {e}")
+        logging.error(f"JSON decoding error: {e}")
+        return jsonify({"error": "Invalid JSON response"}), 500
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({"error": "Unexpected processing error"}), 500
 
-
-    # Fetch agent data
-
-    cldis_category, category, categoryid, category_binary = em.auto_sort(cache_categories, word=catagory, max_distance=10, bucket_array=bucket_categories, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=5)
-
+    # Fetch agent data safely
     try:
-        cldis_target, target, targetid, target_binary = em.auto_sort(cache_targets, word=product_name, max_distance=10, bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=4)
+        cldis_category, category, categoryid, category_binary = em.auto_sort(
+            cache_categories, word=category, max_distance=10, 
+            bucket_array=bucket_categories, type_of_distance_calc="COSINE SIMILARITY", 
+            amount_of_binary_digits=5
+        )
     except Exception as e:
-        print(f"Error during auto_sort: {e}")
-        return jsonify({"error": "Error during auto_sort processing"}), 500
+        logging.error(f"Error during category sorting: {e}")
+        return jsonify({"error": "Category processing error"}), 500
 
-    # Process product category and generate input vector
-    llm_output = em.llm_call(f"what category should this product be in: {product_name}")
-    print("LLM output: ", llm_output)
+    # Product category classification using LLM
+    try:
+        llm_output = em.llm_call(f"What category should this product be in: {product_name}")
+        logging.info(f"LLM output: {llm_output}")
 
-    cldis, genre, bucketid, genre_binary = em.auto_sort(
-        cache, word=llm_output, max_distance=10, bucket_array=bucket,
-        type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
-    )   #using product name here as category is way to broad, e.g wallet is clothing, Shoes & Jewelry
+        cldis, genre, bucketid, genre_binary = em.auto_sort(
+            cache, word=llm_output, max_distance=10, 
+            bucket_array=bucket, type_of_distance_calc="COSINE SIMILARITY", 
+            amount_of_binary_digits=10
+        )
+    except Exception as e:
+        logging.error(f"Error during LLM processing: {e}")
+        return jsonify({"error": "LLM classification error"}), 500
 
-    input_to_agent = np.concatenate([genre_binary, target_binary, np.array(category_binary)])
+    # Final input vector
+    input_to_agent = np.concatenate([genre_binary, category_binary])
+    logging.info(f"Input to agent: {input_to_agent}")
 
-    
-
-    
-    print("Category: ", catagory)
-    print("genre: ", genre_binary)
-    print("target: ", target_binary)
-    print("Input to agent: ", input_to_agent)
     # Get agent recommendation
     try:
         response = agentResponse(input_to_agent, email, name_of_agent)
-        if sum(response) == 0:
-            recommendation_score = 0
-        else:
-            recommendation_score = (sum(response) / len(response)) * 100
+        recommendation_score = (sum(response) / len(response)) * 100 if sum(response) != 0 else 0
     except Exception as e:
-        print(f"Error during recommendation: {e}")
-        return jsonify({"error": "Error during recommendation"}), 500
+        logging.error(f"Error during recommendation: {e}")
+        return jsonify({"error": "Recommendation processing error"}), 500
 
     return jsonify({
         "genre": genre,
-        "target": target,
         "recommendation_score": recommendation_score
     })
 
