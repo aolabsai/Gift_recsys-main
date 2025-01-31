@@ -257,7 +257,7 @@ def agent_recommend():
         name_of_agent = agent_in_use[1]
 
         ep = f"/product-details?asin={asin}&country=US"
-
+        print("using asin: ", asin)
         max_retries = 3
         for attempt in range(max_retries):
             print(f"Attempt {attempt + 1}: Fetching product details...")
