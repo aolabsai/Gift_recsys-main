@@ -240,105 +240,97 @@ def agent_recommend():
     data = request.json
     logging.info(f"Received data: {data}")
 
-    # Extract product information safely
-    product_info = data.get("product", {})
-    product_name = product_info.get("name", "Unknown")
-    asin = product_info.get("asin", "")
-    price = product_info.get("product_price", 0)
-
-    # Extract agent info safely
-    agent_in_use = data.get("agentInUse", [])
-    if len(agent_in_use) < 2:
-        return jsonify({"error": "Invalid agent info"}), 400
-
-    email = agent_in_use[0].lower()
-    name_of_agent = agent_in_use[1]
-
-    logging.info(f"Agent info: {email}, {name_of_agent}")
-
-    # API Request Setup
-    ep = f"/product-details?asin={asin}&country=US"
-
-    # Retry logic
-    for attempt in range(3):
-        try:
-            conn.request("GET", ep, headers=headers)
-            res = conn.getresponse()
-            if res.status == 200:
-                break  # Success, exit retry loop
-            else:
-                logging.warning(f"Attempt {attempt + 1}: API returned status {res.status}, retrying...")
-        except http.client.RemoteDisconnected:
-            logging.warning(f"Attempt {attempt + 1}: Remote server disconnected, retrying...")
-        time.sleep(2 ** attempt)  # Exponential backoff (2, 4, 8 sec)
-    else:
-        return jsonify({"error": "Failed to connect to product API"}), 500  # If all retries fail
-
-    # Process Response Data
     try:
-        decoded_response = res.read().decode("utf-8")
+        # Extract product details safely
+        product_info = data.get("product", {})
+        product_name = product_info.get("name", "Unknown")
+        asin = product_info.get("asin", "")
+        price = product_info.get("product_price", 0)
+
+        agent_in_use = data.get("agentInUse", [])
+        if not agent_in_use or len(agent_in_use) < 2:
+            return jsonify({"error": "Invalid agent data"}), 400
+        
+        email = agent_in_use[0].lower()
+        name_of_agent = agent_in_use[1]
+
+        logging.info(f"Agent info: {email}, {name_of_agent}")
+
+
+        ep = f"/product-details?asin={asin}&country=US"
+
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                conn.request("GET", ep, headers=headers)
+                res = conn.getresponse()
+                if res.status == 200:
+                    break  # Exit loop if successful
+                else:
+                    logging.warning(f"Attempt {attempt + 1}: Received HTTP {res.status}")
+            except http.client.RemoteDisconnected:
+                logging.error(f"Attempt {attempt + 1}: Connection dropped, retrying...")
+                time.sleep(2 ** attempt)  # Exponential backoff (2, 4, 8 sec)
+        
+        # Read and parse response
+        data_res = res.read()
+        decoded_response = data_res.decode("utf-8")
         parsed_data = json.loads(decoded_response)
 
-        # Validate response structure
-        if "data" not in parsed_data or "category_path" not in parsed_data["data"]:
-            logging.error("Unexpected response format")
-            return jsonify({"error": "Invalid API response"}), 500
-
-        category_path = parsed_data["data"]["category_path"]
-        category = category_path[0].get("name", "Unknown")
-        brand = parsed_data["data"].get("product_details", {}).get("brand", "Unknown")
+        # Extract category and brand safely
+        category_path = parsed_data.get("data", {}).get("category_path", [])
+        category = category_path[0].get("name", "Unknown") if category_path else "Unknown"
+        brand = parsed_data.get("data", {}).get("product_details", {}).get("brand", "Unknown")
 
         logging.info(f"Brand: {brand}, Category: {category}")
 
     except json.JSONDecodeError as e:
         logging.error(f"JSON decoding error: {e}")
-        return jsonify({"error": "Invalid JSON response"}), 500
+        return jsonify({"error": "Invalid JSON response from API"}), 500
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
-        return jsonify({"error": "Unexpected processing error"}), 500
+        return jsonify({"error": "An error occurred while fetching product details"}), 500
 
-    # Fetch agent data safely
+    # Process category and generate input vector
     try:
         cldis_category, category, categoryid, category_binary = em.auto_sort(
-            cache_categories, word=category, max_distance=10, 
-            bucket_array=bucket_categories, type_of_distance_calc="COSINE SIMILARITY", 
+            cache_categories, word=category, max_distance=10,
+            bucket_array=bucket_categories, type_of_distance_calc="COSINE SIMILARITY",
             amount_of_binary_digits=5
         )
-    except Exception as e:
-        logging.error(f"Error during category sorting: {e}")
-        return jsonify({"error": "Category processing error"}), 500
 
-    # Product category classification using LLM
-    try:
-        llm_output = em.llm_call(f"What category should this product be in: {product_name}")
+        cldis_target, target, targetid, target_binary = em.auto_sort(
+            cache_targets, word=product_name, max_distance=10,
+            bucket_array=bucket_targets, type_of_distance_calc="COSINE SIMILARITY",
+            amount_of_binary_digits=4
+        )
+
+        llm_output = em.llm_call(f"what category should this product be in: {product_name}")
         logging.info(f"LLM output: {llm_output}")
 
         cldis, genre, bucketid, genre_binary = em.auto_sort(
-            cache, word=llm_output, max_distance=10, 
-            bucket_array=bucket, type_of_distance_calc="COSINE SIMILARITY", 
-            amount_of_binary_digits=10
+            cache, word=llm_output, max_distance=10, bucket_array=bucket,
+            type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
         )
-    except Exception as e:
-        logging.error(f"Error during LLM processing: {e}")
-        return jsonify({"error": "LLM classification error"}), 500
 
-    # Final input vector
-    input_to_agent = np.concatenate([genre_binary, category_binary])
-    logging.info(f"Input to agent: {input_to_agent}")
+        input_to_agent = np.concatenate([genre_binary, target_binary, np.array(category_binary)])
 
-    # Get agent recommendation
-    try:
+        logging.info(f"Input to agent: {input_to_agent}")
+
+        # Get agent recommendation
         response = agentResponse(input_to_agent, email, name_of_agent)
         recommendation_score = (sum(response) / len(response)) * 100 if sum(response) != 0 else 0
+
+        return jsonify({
+            "genre": genre,
+            "target": target,
+            "recommendation_score": recommendation_score
+        })
+
     except Exception as e:
         logging.error(f"Error during recommendation: {e}")
-        return jsonify({"error": "Recommendation processing error"}), 500
-
-    return jsonify({
-        "genre": genre,
-        "recommendation_score": recommendation_score
-    })
-
+        return jsonify({"error": "Error during recommendation processing"}), 500
 
 
 @app.route('/trainAgent', methods=["POST"])
