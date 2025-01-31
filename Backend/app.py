@@ -488,6 +488,71 @@ def getAgents():
 
     return jsonify(agents_list)
 
+@app.route("/saveProduct", methods=["POST"])
+def saveProduct():
+    try:
+        data = request.json
+        aiu = data.get("agentInUse", [])
+        product = data.get("product", {})
+
+        if len(aiu) < 2:
+            return jsonify({"error": "Invalid agent data"}), 400
+
+        email = aiu[0].lower()
+        name_of_agent = aiu[1]
+
+        print("Product: ", product)
+
+        # Query the agent document
+        agent_query = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+        agent_doc = next(agent_query, None)  # Get the first matching document
+
+        if not agent_doc:
+            return jsonify({"error": "Agent not found"}), 404
+
+        agent_ref = db.collection('Agents').document(agent_doc.id)  # Correct document reference
+
+        # Update the product field
+        agent_ref.collection('products').add(product)
+
+        return jsonify({"message": "Product updated successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/getProducts", methods=["POST"])
+def getProducts():
+    try:
+        data = request.json
+        aiu = data.get("agentInUse", [])
+
+        if not isinstance(aiu, list) or len(aiu) < 2:
+            return jsonify({"error": "Invalid agent data"}), 400
+
+        email = aiu[0].lower()
+        name_of_agent = aiu[1]
+
+        # Query the agent document
+        agent_query = db.collection('Agents').where('email', '==', email).where('name', '==', name_of_agent).stream()
+        agent_doc = next(agent_query, None)  # Get the first matching document
+
+        if not agent_doc:
+            return jsonify({"error": "Agent not found"}), 404
+
+        agent_ref = db.collection('Agents').document(agent_doc.id)  # Correct document reference
+
+        # Fetch products
+        products_query = agent_ref.collection('products').stream()
+        products = [product.to_dict() for product in products_query]  # Convert documents to dict
+
+        return jsonify({"products": products}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
 @app.route('/')
 def home():
     return "Testing"

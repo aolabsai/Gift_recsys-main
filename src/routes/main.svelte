@@ -31,6 +31,8 @@
     let link = null;
     let season = null;
 
+    let savedProducts = [];
+
     async function fetchCountries() {
         const response = await fetch('/google-countries.json');
         countries = await response.json();
@@ -149,6 +151,31 @@
         agents = res;
     }
 
+    async function saveProduct() {
+        const data = { product, agentInUse };
+        const response = await fetch(`${baseEndpoint}/saveProduct`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        const res = await response.json();
+        console.log(res);
+        getProduct();
+    }
+
+    async function getProduct() {
+        const data = { product, agentInUse };
+        const response = await fetch(`${baseEndpoint}/getProducts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        const res = await response.json();
+        console.log(res);
+
+        savedProducts = res["products"];
+    }
+
     function updateAgentInUse(email, name) {
         agentInUse = [email, name];
         console.log("Agent is use: ", agentInUse);
@@ -235,7 +262,7 @@
     {#if loggedin && !showrecommendationPage && !createNewAgentPage}
         <div id="header_text">
             <h1 id="rainbow_header">Hello, {email}.</h1>
-            <h1>Who are you shopping for today?</h1>
+            
         </div>
 
         <div id="create_agent_page">
@@ -280,6 +307,7 @@
                     <button on:click={() => { 
                         showrecommendationPage = true;
                         updateAgentInUse(agent.email, agent.name)
+                        getProduct();
                     }}>Select</button>
                 </div>
             {/each}
@@ -290,6 +318,10 @@
     {/if}-->
 
     <div id="recommendation_page"> 
+        <div id="recommendation_page_left">
+            
+
+        </div>
         {#if showrecommendationPage && loggedin}
 
         <button id="main_button" on:click={deleteAgent}>Delete Agent</button>
@@ -307,12 +339,16 @@
         </label>
         <button id="main_button" on:click={getRecommendation}>Get Recommendation</button>
 
+
+
         {/if}
 
         {#if isLoading}
         <div class="spinner-container">
             <div class="spinner"></div>
         </div>
+
+
       {/if}
 
         {#if recommendedProduct&&showrecommendationPage}
@@ -325,14 +361,27 @@
             <p>Target: {target}</p>
 
             <div><a id="buy_now_link" href={link} target="_blank">Buy Now </a></div>
-            
+            <button id="save_button" on:click={saveProduct} >Save for later</button>
             
             <p>Recommendation Score: {recommendationScore}%</p>
 
             <button id="main_button" on:click={trainAgentPos}>Recommend More</button>
             <button id="main_button" on:click={trainAgentNeg}>Recommend Less</button>
+        
+        {/if}
 
-    
+        {#if showrecommendationPage&&loggedin}
+            <h1>Your saved products</h1>
+            
+            <div id="savedProducts">
+                {#each savedProducts as product}
+                    <div class="savedProduct">
+                        <p>{product.name}</p>
+                        <a id="buy_now_link" href={product.link} target="_blank">Buy Now </a>
+
+                    </div>
+                {/each}
+            </div>
         {/if}
     </div>
  
