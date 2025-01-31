@@ -237,8 +237,10 @@ def get_random_product():
 logging.basicConfig(level=logging.INFO)
 @app.route('/agent-recommend', methods=['POST'])
 def agent_recommend():
+    print("Received request to recommend")
     data = request.json
-    logging.info(f"Received data: {data}")
+    print("Data: ", data)
+
 
     try:
         # Extract product details safely
@@ -254,13 +256,11 @@ def agent_recommend():
         email = agent_in_use[0].lower()
         name_of_agent = agent_in_use[1]
 
-        logging.info(f"Agent info: {email}, {name_of_agent}")
-
-
         ep = f"/product-details?asin={asin}&country=US"
 
         max_retries = 3
         for attempt in range(max_retries):
+            print(f"Attempt {attempt + 1}: Fetching product details...")
             try:
                 conn.request("GET", ep, headers=headers)
                 res = conn.getresponse()
