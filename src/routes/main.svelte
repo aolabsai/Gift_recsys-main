@@ -276,7 +276,7 @@
                 <div class="select_agents">
                     <img id="agent_img" src="https://s3-alpha-sig.figma.com/img/b6cf/c50b/674d6137a02d8c5b27b14be520e715b4?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=PAK5hDpRsD4q1U4b~~qyMS3ktrCt6fhjl6HDWuK6ZqDfsvniATLDs0JseBmUNNX9u2yAHxL8HZxvm~BHVIoRxAI4Bf8GLEnyMKY~w~O6wSBiiFqlRAew8u2irOJ5e-v8aI6ki4m5Pv48Wo0bCAxRjYMDlRt5O60k7V1LC5B1kwga3Vh~H5yC2-Ei4MVnSv3ULJoVe8-WV~X3zhTbGouGJd4023FxB~-K28h9t14ItPywTipFkN~9X45t9cZ7ACMHcWs~iyCHW7gx46FQZvH~YUUH8eHDttf0HLHiTm3-DFS3fzP63Mt8yaXcE-or4825ztRr2QAXAmTky1tpO41WZg__">
                     <h1>{agent.name}</h1>
-                    <p>{age}, {agent.gender}, {selectedCountry}</p>
+                    <p>{agent.age}, {agent.gender}, {agent.country}</p>
                     <button on:click={() => { 
                         showrecommendationPage = true;
                         updateAgentInUse(agent.email, agent.name)
@@ -298,7 +298,7 @@
         <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
         <span>{budget}$</span>
         <input type="text" placeholder="Occasion" bind:value={occasion}>
-        <label>season
+        <label>Season
             <select bind:value={season}>
                 <option>Winter</option>
                 <option>Spring</option>
