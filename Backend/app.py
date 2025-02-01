@@ -57,11 +57,8 @@ cache, bucket = em.init("embedding_cache", possible_genres)
 
 agent = None
 
-conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
-headers = {
-    'x-rapidapi-key': rapid_key,
-    'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
-}
+
+
 
 
 def listTostring(s):
@@ -200,43 +197,52 @@ def get_random_product():
 
     query = re.sub(r'^\d+\.\s*', '', query).strip()
     encoded_query = quote(query)
-    encoded_query = (encoded_query+"%20for"+"%20"+ gender)
+    encoded_query = (encoded_query)
     
     print("Query: ", encoded_query)
 
-    for i in range(3):
-        try:
-            conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price={min_price}&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
-            res = conn.getresponse()
-            data = json.loads(res.read().decode("utf-8"))
-            products = data.get("data", {}).get("products", [])
-            if not products:
-                print("error: No products found")
-                return jsonify({"error": "No products found"})
+    conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
+    headers = {
+        'x-rapidapi-key': rapid_key,
+        'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
+    }
 
-            random.shuffle(products)
-            product = products[0]
-            print("Product: ",product)
-            return jsonify({
-                "asin": product["asin"],
-                "name": product["product_title"],
-                "price": product.get("product_price", 0),
-                "photo": product.get("product_photo", "none"),
-                "link": product.get("product_url"),
-            })
-        except http.client.RemoteDisconnected:
-            print("Remote server disconnected. Retrying...")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return jsonify({"error": "An unexpected error occurred"}), 500
+    for i in range(5):
+        print(f"Attempt {i + 1}: Fetching products...")
+
+        print("in try")
+        conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price={min_price}&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
+        res = conn.getresponse()
+        data = json.loads(res.read().decode("utf-8"))
+        print("Data: ", data)
+        products = data.get("data", {}).get("products", [])
+        if not products:
+            print("error: No products found")
+            return jsonify({"error": "No products found"})
+
+        random.shuffle(products)
+        product = products[0]
+        print("Product: ",product)
+        return jsonify({
+            "asin": product["asin"],
+            "name": product["product_title"],
+            "price": product.get("product_price", 0),
+            "photo": product.get("product_photo", "none"),
+            "link": product.get("product_url"),
+        })
+
 
     return jsonify({"error": "Failed to fetch products after multiple retries"}), 500
     
 
-
-logging.basicConfig(level=logging.INFO)
 @app.route('/agent-recommend', methods=['POST'])
+
 def agent_recommend():
+    conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
+    headers = {
+        'x-rapidapi-key': rapid_key,
+        'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
+    }
     print("Received request to recommend")
     data = request.json
     print("Data: ", data)
@@ -258,6 +264,8 @@ def agent_recommend():
 
         ep = f"/product-details?asin={asin}&country=US"
         print("using asin: ", asin)
+
+
         max_retries = 3
         for attempt in range(max_retries):
             print(f"Attempt {attempt + 1}: Fetching product details...")
@@ -282,13 +290,13 @@ def agent_recommend():
         category = category_path[0].get("name", "Unknown") if category_path else "Unknown"
         brand = parsed_data.get("data", {}).get("product_details", {}).get("brand", "Unknown")
 
-        logging.info(f"Brand: {brand}, Category: {category}")
+
 
     except json.JSONDecodeError as e:
-        logging.error(f"JSON decoding error: {e}")
+        print(f"JSON decoding error: {e}")
         return jsonify({"error": "Invalid JSON response from API"}), 500
     except Exception as e:
-        logging.error(f"Unexpected error: {e}")
+        print(f"Unexpected error: {e}")
         return jsonify({"error": "An error occurred while fetching product details"}), 500
 
     # Process category and generate input vector
@@ -306,7 +314,7 @@ def agent_recommend():
         )
 
         llm_output = em.llm_call(f"what category should this product be in: {product_name}")
-        logging.info(f"LLM output: {llm_output}")
+        print(f"LLM output: {llm_output}")
 
         cldis, genre, bucketid, genre_binary = em.auto_sort(
             cache, word=llm_output, max_distance=10, bucket_array=bucket,
@@ -315,7 +323,7 @@ def agent_recommend():
 
         input_to_agent = np.concatenate([genre_binary, target_binary, np.array(category_binary)])
 
-        logging.info(f"Input to agent: {input_to_agent}")
+        print(f"Input to agent: {input_to_agent}")
 
         # Get agent recommendation
         response = agentResponse(input_to_agent, email, name_of_agent)

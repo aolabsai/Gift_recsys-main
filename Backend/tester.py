@@ -1,34 +1,16 @@
-import requests
-import numpy as np
-import json
 
-url = "https://api.aolabs.ai/v0dev/kennel/agent"
+import http.client
 
-
-uid= "testing"
-payload = {
-    "kennel_id": "recommender3",  # use kennel_name entered above
-    "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
-    "request": "story",
-    "INPUT": "0000000000000000000", #19 zeros
-}
+conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
 
 headers = {
-    "accept": "application/json",
-    "content-type": "application/json",
-    "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+    'x-rapidapi-key': "723e3b8057msh611f8822fbca1b7p12867djsnb164e99788e3",
+    'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
 }
 
-response = requests.post(url, json=payload, headers=headers)
-print(response.text)
-response_dict = json.loads(response.text)
-#print(response_dict["state"])
-#print(type(response_dict))
+conn.request("GET", "/search?query=Phone&page=1&country=US&sort_by=RELEVANCE&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
 
-#print(response_dict.keys())
-#story = response_dict["story"]
-#story = list(story)
+res = conn.getresponse()
+data = res.read()
 
-#story = np.asarray(story, dtype="int")
-#print(story.shape)
-#reshape = np.reshape(story, [277, 16+16+ 10+ 3])
+print(data.decode("utf-8"))
