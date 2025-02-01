@@ -43,7 +43,7 @@ with open("google-countries.json") as f:
 client = OpenAI(api_key=openai_key)
 em.config(openai_key)
 
-possible_genres = ["Clothes", "Electronics", "Books", "Children Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Drama Book", "Dolls", "Purse", "Wallet", "Chocolates"]
+possible_genres = ["Clothes", "Electronics", "Books", "Children Toys", "Jewelry", "Home", "Beauty", "Sports", "Food", "Music", "Movies", "Games", "Art", "Travel", "Pets", "Health", "Fitness", "Tech", "DIY", "Gardening", "Cooking", "Crafts", "Cars", "Outdoors", "Office", "School", "Baby", "Party", "Wedding", "Grooming", "Drama Book", "Dolls", "Purse", "Wallet", "Chocolates", "Makeup"]
 
 targets = ["Unisex", "Adult Male", "Adult Female","Female Teenager","Male Tennager", "Children/ Kids"]
 
@@ -56,8 +56,6 @@ cache_categories, bucket_categories = em.init("embedding_categories_cache", amaz
 cache, bucket = em.init("embedding_cache", possible_genres)
 
 agent = None
-
-
 
 
 
@@ -334,6 +332,9 @@ def agent_recommend():
             "target": target,
             "recommendation_score": recommendation_score
         })
+    
+    
+
 
     except Exception as e:
         logging.error(f"Error during recommendation: {e}")

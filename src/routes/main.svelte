@@ -30,8 +30,12 @@
     let agentInUse = null;
     let link = null;
     let season = null;
-
     let savedProducts = [];
+
+    let number_of_products_skipped = 0;
+    let recommendation_threshold = 50; // active threshold system
+
+
 
     async function fetchCountries() {
         const response = await fetch('/google-countries.json');
@@ -82,7 +86,20 @@
         target = agentData.target;
         genre = agentData.genre;
         link = recommendedProduct.link;
-    }
+        if (agentData.recommendation_score <recommendation_threshold) { 
+            console.log("Recommendation score is less than threshold, getting another recommendation");
+            recommendation_threshold -= 20; // bring down threshold
+            getRecommendation();
+            number_of_products_skipped += 1;
+        }
+        else {
+            console.log("Recommendation score is greater than threshold, showing recommendation");
+            recommendation_threshold = 50; // reset threshold
+
+        }
+        console.log("Number of products skipped: ", number_of_products_skipped);
+        console.log("Recommendation threshold: ", recommendation_threshold);
+}
 
     async function trainAgentPos() {
         const Label = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
