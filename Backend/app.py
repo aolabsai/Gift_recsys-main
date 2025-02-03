@@ -12,6 +12,7 @@ import embedding_bucketing.embedding_model_test as em
 
 from flask_cors import CORS
 
+
 from firebase_admin import credentials, auth
 import firebase_admin
 from firebase_admin import firestore
@@ -30,7 +31,11 @@ url = "https://api.aolabs.ai/v0dev/kennel/agent"
 
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
+
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
+
+
+
 
 cred = credentials.Certificate(firebase_sdk)
 firebase_admin.initialize_app(cred)
@@ -387,22 +392,32 @@ def trainAgent():
         print(f"Error saving training data: {e}")
         return jsonify({"error": "Error saving training data"}), 500
 
+def verify_password(email, password):
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBCrFSP2Uky2uEJIJQIsFS_dSen7nM72aQ"
+    payload = {"email": email, "password": password, "returnSecureToken": True}
+    response = requests.post(url, json=payload)
+
+    if response.status_code == 200:
+        return response.json()  #return the user data
+    else:
+        return None  # auth failed... password incorrect
+
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
     print(data)
     email = data.get("email").lower()
     password = data.get("password")
-    try:
+    if not email or not password:
+        return jsonify({"message": "Email and password are required"}), 400
 
-        user = auth.get_user_by_email(email)
-        return jsonify({"message": f"Hello {user.email}", "uid": user.uid}), 200
-    except auth.UserNotFoundError:
-        print("error: User not found ")
-        return jsonify({"message": "User not found, try registering your account first"}), 400
-    except Exception as e:
-        print("error: ",e)
-        return jsonify({"error": str(e)}), 400
+    # Verify email and password
+    user_data = verify_password(email, password)
+
+    if user_data:
+        return jsonify({"message": f"Welcome {email}!", "uid": user_data["localId"]}), 200
+    else:
+        return jsonify({"message": "Invalid email or password"}), 401
     
 @app.route("/createAccount", methods=["POST"])
 def createAccount():
