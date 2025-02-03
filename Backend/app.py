@@ -33,7 +33,7 @@ openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
 
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
-
+firebase_apikey = os.getenv("firebase_apikey")
 
 
 
@@ -393,7 +393,7 @@ def trainAgent():
         return jsonify({"error": "Error saving training data"}), 500
 
 def verify_password(email, password):
-    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBCrFSP2Uky2uEJIJQIsFS_dSen7nM72aQ"
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebase_apikey}"
     payload = {"email": email, "password": password, "returnSecureToken": True}
     response = requests.post(url, json=payload)
 
