@@ -399,7 +399,7 @@ def login():
         return jsonify({"message": f"Hello {user.email}", "uid": user.uid}), 200
     except auth.UserNotFoundError:
         print("error: User not found ")
-        return jsonify({"error": "User not found, try registering your account first"}), 400
+        return jsonify({"message": "User not found, try registering your account first"}), 400
     except Exception as e:
         print("error: ",e)
         return jsonify({"error": str(e)}), 400
