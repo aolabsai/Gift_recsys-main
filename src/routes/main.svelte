@@ -253,7 +253,7 @@
             <h1 id="rainbow_header">Delightful gift giving starts here</h1>
        
             <label>Email: <input type="email" bind:value={email}></label>
-            <label>Password: <input type="text" bind:value={password}></label>
+            <label>Password: <input type="password" bind:value={password}></label>
             <button id="main_button" on:click={() => { login(); getAgents(); }}>Continue</button>
             <p>----or----</p>
             <button id="main_button" on:click={createAccount}>Create New Account</button>
