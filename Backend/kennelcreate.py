@@ -7,7 +7,7 @@ url = "https://api.aolabs.ai/v0dev/kennel"
 headers = {
     "accept": "application/json",
     "content-type": "application/json",
-    "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+    "X-API-KEY": "api_key_here"
 }
 
 payload = {
