@@ -23,6 +23,49 @@ main {
   text-align: center;
 }
 
+@media (max-width: 600px) {
+  #rainbow_header {
+    font-size: 1.5rem;
+  }
+  #grey_small_header {
+    font-size: 0.5rem;
+  }
+  h1 {
+    font-size: 1rem;
+  }
+  p {
+    font-size: 0.8rem;
+  }
+  #main_button {
+    font-size: 0.6rem;
+  }
+}
+
+
+#savedProducts  {
+  padding: 0.9rem;
+}
+
+#divider_between_saved_products {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: gray;
+  padding: 1rem;
+  text-align: center;
+  font-size: 20px;
+  position: relative;
+}
+
+#divider_between_saved_products::before,
+#divider_between_saved_products::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid gray;
+ 
+}
+
+
 #grey_small_header {
   display: flex;
   color: gray;

@@ -395,6 +395,8 @@
                     <div class="savedProduct">
                         <p>{product.name}</p>
                         <a id="buy_now_link" href={product.link} target="_blank">Buy Now </a>
+                        <div id="divider_between_saved_products">
+                        </div>
 
                     </div>
                 {/each}
