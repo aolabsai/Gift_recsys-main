@@ -35,6 +35,7 @@ rapid_key = os.getenv("RAPID_KEY")
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
 firebase_apikey = os.getenv("firebase_apikey")
 
+aolabs_key = os.getenv("AOLABS_API_KEY")
 
 
 cred = credentials.Certificate(firebase_sdk)
@@ -91,7 +92,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+        "X-API-KEY": f"{aolabs_key}"
     }
 
     response = requests.post(url, json=payload, headers=headers)
@@ -117,7 +118,7 @@ def agentResponse(Input, email, name_of_agent):
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+        "X-API-KEY": f"{aolabs_key}"
     }
 
     response = requests.post(url, json=payload, headers=headers)
