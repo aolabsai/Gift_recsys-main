@@ -78,7 +78,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     uid = email+name_of_agent
     print("training agent with uid", uid)
     payload = {
-    "kennel_id": "recommender3",  # use kennel_name entered above
+    "kennel_id": "recommender4",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
     "INPUT": Input,  
 
@@ -105,7 +105,7 @@ def agentResponse(Input, email, name_of_agent):
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
     payload = {
-    "kennel_id": "recommender3",  # use kennel_name entered above
+    "kennel_id": "recommender4",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
     "INPUT": Input,  
 
@@ -308,7 +308,7 @@ def agent_recommend():
         cldis_category, category, categoryid, category_binary = em.auto_sort(
             cache_categories, word=category, max_distance=10,
             bucket_array=bucket_categories, type_of_distance_calc="COSINE SIMILARITY",
-            amount_of_binary_digits=5
+            amount_of_binary_digits=10
         )
 
         cldis_target, target, targetid, target_binary = em.auto_sort(

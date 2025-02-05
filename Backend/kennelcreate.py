@@ -1,19 +1,23 @@
-import requests
+import requests#
+import dotenv
+import os
 
-gist = "https://gist.githubusercontent.com/Rafipilot/8fc2d8549f9fc7433c0ce01abe7b26d6/raw/52a6857097887b5b38c5433591ef4d934b0ca7b6/gistfile1.txt"
+aolabs_api_key = os.getenv("AOLABS_API_KEY")
+
+gist = "https://gist.githubusercontent.com/Rafipilot/8fc2d8549f9fc7433c0ce01abe7b26d6/raw/689fda194eab6b786363fd92a047305193ab20cf/gistfile1.txt"
 
 url = "https://api.aolabs.ai/v0dev/kennel"
 
 headers = {
     "accept": "application/json",
     "content-type": "application/json",
-    "X-API-KEY": "api_key_here"
+    "X-API-KEY": "key here"
 }
 
 payload = {
-    "kennel_name": "recommender3",
+    "kennel_name": "recommender4",
     "arch_URL": gist,
-    "description": "Basic Recommender System",
+    "description": "Gift Recommender System",
     "permissions": ""
 }
 
