@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: 
+      secrets:
+        - env
+        - .env
+        - BUILD_SECRET
+      context: ./Backend
+    ports:
+      - "8000:8000"
+    secrets:
+      - env
+
+  frontend:
+    build: .
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+secrets:
+  env:
+    file: .env
+  BUILD_SECRET:
+    file: .env
+  .env:
+    file: .env

@@ -14,11 +14,23 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Declare build argument for GitHub PAT
-ARG GH_TOKEN
+# ARG GH_TOKEN
 
 # Clone the private repository using GitHub PAT
-RUN git clone https://$GH_TOKEN@github.com/aolabsai/ao_core.git /app/ao_core
+# RUN git clone https://$GH_TOKEN@github.com/aolabsai/ao_core.git /app/ao_core
+# RUN --mount=type=secret,id=env,target=/app/.env \
+#     grep -v '^#' .env 
+# RUN --mount=type=secret,id=env BUILD_SECRET="$(cat /run/secrets/.env)" \
+#     echo "BUILD_SECRET=$env"
 
+# RUN echo "hello"
+RUN --mount=type=secret,id=env,target=/app/.env \
+    export $(grep -v '^#' .env | xargs) && \
+    git clone https://${ao_github_PAT}@github.com/aolabsai/ao_core.git
+
+# RUN --mount=type=secret,id=BUILD_SECRET BUILD_SECRET="$(cat /run/secrets/BUILD_SECRET" \
+#     # export $(grep -v '^#' BUILD_SECRET | xargs) && \
+#     git clone https://${ao_github_PAT}@github.com/aolabsai/ao_core.git
 # Debugging: List files in the ao_core directory
 RUN ls /app/ao_core
 
