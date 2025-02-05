@@ -26,4 +26,4 @@ src/FirebaseKey.json
 
 #secrets
 */secrets/*
-.env
+.env*

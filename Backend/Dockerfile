@@ -50,4 +50,4 @@ ENV PYTHONPATH="/app/ao_core:$PYTHONPATH"
 EXPOSE 5000
 
 # Run the Flask application
-CMD ["gunicorn", "-w", "4", "app:app"]
+CMD ["gunicorn", "-w", "4", "app:app", "--bind=0.0.0.0:5000"]

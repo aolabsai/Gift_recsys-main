@@ -1,13 +1,13 @@
 services:
   backend:
-    build: 
+    build:
       secrets:
         - env
         - .env
         - BUILD_SECRET
       context: ./Backend
     ports:
-      - "8000:8000"
+      - "5000:5000"
     secrets:
       - env
 
@@ -20,7 +20,7 @@ services:
 
 secrets:
   env:
-    file: .env
+    file: .env_build
   BUILD_SECRET:
     file: .env
   .env:
