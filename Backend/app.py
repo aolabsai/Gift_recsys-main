@@ -27,7 +27,7 @@ CORS(app)
 
 load_dotenv()
 
-url = "https://api.aolabs.ai/v0dev/kennel/agent"
+ao_endpoint_url = "https://api.aolabs.ai/v0dev/kennel/agent"
 
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
@@ -36,7 +36,7 @@ firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
 firebase_apikey = os.getenv("firebase_apikey")
 
 aolabs_key = os.getenv("AOLABS_API_KEY")
-
+kennel_id = "recommender4"
 
 cred = credentials.Certificate(firebase_sdk)
 firebase_admin.initialize_app(cred)
@@ -78,8 +78,8 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     uid = email+name_of_agent
     print("training agent with uid", uid)
     payload = {
-    "kennel_id": "recommender4",  # use kennel_name entered above
-    "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
+    "kennel_id": kennel_id, 
+    "agent_id": uid,   
     "INPUT": Input,  
 
     "LABEL": Label,
@@ -95,8 +95,26 @@ def trainAgentCall(Input, Label, email, name_of_agent):
         "X-API-KEY": f"{aolabs_key}"
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
     print("Agent response: ", response.json())
+
+
+def agentDelete(email, name_of_agent):
+    uid= email+name_of_agent
+
+    payload = {
+        "kennel_id": kennel_id,
+        "agent_id": uid,
+        "request": "delete_agent"
+    }
+
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "X-API-KEY": f"{aolabs_key}"
+    }
+    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
+    print("Agent delete response: ", response.text)
 
 def agentResponse(Input, email, name_of_agent):
     email = email.lower()
@@ -105,8 +123,8 @@ def agentResponse(Input, email, name_of_agent):
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
     payload = {
-    "kennel_id": "recommender4",  # use kennel_name entered above
-    "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
+    "kennel_id": kennel_id, 
+    "agent_id": uid,  
     "INPUT": Input,  
 
     "control": {
@@ -121,7 +139,7 @@ def agentResponse(Input, email, name_of_agent):
         "X-API-KEY": f"{aolabs_key}"
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
     print("Agent response: ", response.json())
     return stringTolist(response.json()["story"])
 
@@ -475,6 +493,8 @@ def deleteAgent():
     found_agent = None
     for agent in agent_ref:
         found_agent = agent
+
+    agentDelete(email, name_of_agent)
     
     if found_agent:
         # Delete the found agent document
@@ -483,8 +503,7 @@ def deleteAgent():
     else:
         return jsonify({"error": "Agent not found"}), 404
     
-    #TODO delete agent from ao labs api
-    uid = email+name_of_agent
+    
 
 
 

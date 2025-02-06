@@ -342,7 +342,10 @@
         </div>
         {#if showrecommendationPage && loggedin}
 
-        <button id="main_button" on:click={deleteAgent}>Delete Agent</button>
+        <button on:click={() => { 
+            showrecommendationPage=false;
+            deleteAgent();
+        }}>Delete Agent</button>
         <h1>Finding the perfect gift for: {agentInUse}</h1>
         <h4>Budget</h4>
         <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
