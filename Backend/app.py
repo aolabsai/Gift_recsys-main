@@ -35,6 +35,7 @@ rapid_key = os.getenv("RAPID_KEY")
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
 firebase_apikey = os.getenv("firebase_apikey")
 
+aolabs_key = os.getenv("AOLABS_API_KEY")
 
 
 cred = credentials.Certificate(firebase_sdk)
@@ -77,7 +78,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     uid = email+name_of_agent
     print("training agent with uid", uid)
     payload = {
-    "kennel_id": "recommender3",  # use kennel_name entered above
+    "kennel_id": "recommender4",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
     "INPUT": Input,  
 
@@ -91,7 +92,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+        "X-API-KEY": f"{aolabs_key}"
     }
 
     response = requests.post(url, json=payload, headers=headers)
@@ -104,7 +105,7 @@ def agentResponse(Input, email, name_of_agent):
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
     payload = {
-    "kennel_id": "recommender3",  # use kennel_name entered above
+    "kennel_id": "recommender4",  # use kennel_name entered above
     "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
     "INPUT": Input,  
 
@@ -117,7 +118,7 @@ def agentResponse(Input, email, name_of_agent):
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "X-API-KEY": "KzZbXbaahd1ElPO5Rtyv3a1ejHlw3Kn848c9SA1J"
+        "X-API-KEY": f"{aolabs_key}"
     }
 
     response = requests.post(url, json=payload, headers=headers)
@@ -307,7 +308,7 @@ def agent_recommend():
         cldis_category, category, categoryid, category_binary = em.auto_sort(
             cache_categories, word=category, max_distance=10,
             bucket_array=bucket_categories, type_of_distance_calc="COSINE SIMILARITY",
-            amount_of_binary_digits=5
+            amount_of_binary_digits=10
         )
 
         cldis_target, target, targetid, target_binary = em.auto_sort(
