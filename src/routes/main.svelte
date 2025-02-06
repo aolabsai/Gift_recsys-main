@@ -325,6 +325,7 @@
                         showrecommendationPage = true;
                         updateAgentInUse(agent.email, agent.name)
                         getProduct();
+                        getRecommendation();
                     }}>Select</button>
                 </div>
             {/each}
@@ -354,8 +355,6 @@
                 <option>Summer</option>
                 <option>Fall</option>
         </label>
-        <button id="main_button" on:click={getRecommendation}>Get Recommendation</button>
-
 
 
         {/if}
