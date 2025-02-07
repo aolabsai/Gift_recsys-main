@@ -31,7 +31,12 @@ frontend_url = "https://gift-recsys-main.onrender.com/"   #change to http://loca
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
-CORS(app, supports_credentials=True, origins=["http://localhost:5174", "https://gift-recsys-main.onrender.com/", "giftrec.aolabs.ai"])
+CORS(app, supports_credentials=True, origins=[
+    "http://localhost:5174",
+    "https://gift-recsys-main.onrender.com",
+    "https://giftrec.aolabs.ai"
+])
+
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
