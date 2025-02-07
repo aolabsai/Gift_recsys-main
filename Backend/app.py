@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, redirect, session
 import jwt
 import datetime
-import google.auth.transport.requests
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
@@ -33,7 +32,7 @@ frontend_url = "https://gift-recsys-main.onrender.com/"   #change to http://loca
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
-CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
+CORS(app, supports_credentials=True, origins=["http://localhost:5174", "https://gift-recsys-main.onrender.com/", "giftrec.aolabs.ai"])
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
