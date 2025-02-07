@@ -2,17 +2,9 @@
     let email = "";
     import { onMount } from "svelte";
 
-    onMount(() => {
-    // Check the URL for the email if user used google auth to sign in
-    const urlParams = new URLSearchParams(window.location.search);
-    email = urlParams.get('email');
-    if (email) {
-        console.log("Logged in as", email);
-        login_user(email);
-    }
-});
 
-    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+      
+    const baseEndpoint = "http://127.0.0.1:5000"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
 
     let countries = [];
     let selectedCountry = "US";
@@ -27,6 +19,8 @@
     let target = null;
     let occasion = null;
     let extraInfo = null;
+
+    let token = localStorage.getItem('token');
 
     let createNewAgentPage = false;
     let newAgentName = "";
@@ -46,12 +40,6 @@
     let number_of_products_skipped = 0;
     let recommendation_threshold = 50; // active threshold system
 
-
-    function login_user(email) {
-    loggedin = true;  // Set loggedin to true as you are now logged in
-    console.log("Logged in as", email);
-    getAgents(); // Now you can fetch the agents after the email is set
-}
 
 
     async function fetchCountries() {
@@ -211,22 +199,46 @@
         savedProducts = res["products"];
     }
 
-    async function login_with_google() {
-    try {
-        const response = await fetch(`${baseEndpoint}/login_with_google`);
-        const data = await response.json();
+    async function check_login()  {
+        console.log("checking login")
+        const params = new URLSearchParams(window.location.search);
+        token = params.get("token")
 
-        if (response.status === 200) {
-            // redirect the user to the Google OAuth page
-            console.log("Redirecting to Google OAuth URL:", data.url);
-            window.location.href = data.url; // redirects the user to Google login page
-        } else {
-            message = data.error || "Failed to get Google OAuth URL";
+        if (token)  {
+            const response = await fetch(`${baseEndpoint}/check_login`, {
+            headers: { "Content-Type": "application/json" , "Authorization": token},
+
+        });
+
+            if (response.status == 200) {
+                const data = await response.json();
+                console.log("data: ", data)
+                email = data.email
+                loggedin = true;
+                getAgents();
+                
+            }
+
         }
-    } catch (error) {
-        message = error.message || "An error occurred during authentication";
     }
-}
+
+    // Google OAuth Login function
+    async function loginWithGoogle() {
+        try {
+            const response = await fetch(`${baseEndpoint}/login_with_google`);
+            const data = await response.json();
+            if (response.status === 200) {
+                window.location.href = data.url; //redirect to google 
+            } else {
+                alert("Login failed!");
+            }
+        } catch (error) {
+            console.error("Error during Google login:", error);
+        }
+    }
+
+        
+    
 
     function updateAgentInUse(email, name) {
         agentInUse = [email, name];
@@ -273,6 +285,10 @@
             isLoading = false;
         }
     };
+    onMount(async () => {
+  check_login();
+});
+
 
     onMount(fetchCountries);
 </script>
@@ -286,7 +302,7 @@
     <div id="login">
         <img id="start_page_img" alt="start_page_img" src="https://s3-alpha-sig.figma.com/img/6be8/76b1/a59b0193952b1c07665ec0ef5458555a?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=a~WBMZovxZB0Sc1UUxuNdTn3sjklDGreg043~LKVo-9y17PIz2N~wrHeQX0jIBPb7988ebJ8ANk6ZWpuqYYEMiUkBTjdmakVRSF6AoyHykjyVjX0kx38VMZAu-2QFkvAX4G5IKOGagnC~pXKnfsdCp9JBxoANEb2mZE5Cut8aelKu~Y8ojo2l9uC4FEl3TdMjfBXy4qEYg5fWdRZ1ZHWYLcvo1-WYJCmmvBZsjjQ9xtO11zKl-euHxuXrKh2ugla2OsrbLmuvOneizuJv7g1lQdNcGlTIdx6Z9uuh9hTiXLptTNbuxg27IUDQi4OXn8L8EjkoslCmdN7pB8dSmIE7w__">
             <h1 id="rainbow_header">Delightful gift giving starts here</h1>
-            <button on:click={login_with_google}>Sign in with Google</button>
+            <button on:click={loginWithGoogle}>Sign in with Google</button>
             <p>----or----</p>
             <label>Email: <input type="email" bind:value={email}></label>
             <label>Password: <input type="password" bind:value={password}></label>
