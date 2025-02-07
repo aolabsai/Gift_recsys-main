@@ -1,8 +1,13 @@
 <script>
     import { onMount } from "svelte";
-
-    // const baseEndpoint = "http://127.0.0.1:5000"s;
-    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    // import {backend_url} from '$env/static/private';
+    
+    // console.log(import.meta.env.BACKEND_URL);
+    console.log(import.meta.env.VITE_BACKEND_URL);
+    // const baseEndpoint = "http://127.0.0.1:5000";
+    const baseEndpoint = import.meta.env.VITE_BACKEND_URL;
+    // const baseEndpoint = "https://giftrec.aolabs.ai";
+    // const baseEndpoint = "aolabsgiftrec-backend-equal-straw-f0736f.782df154-c4c7-43e7-9965-fa00212de798.svc.cluster.local"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
 
     let countries = [];
     let selectedCountry = "US";

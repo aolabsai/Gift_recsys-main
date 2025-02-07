@@ -1,1 +1,4 @@
-.env*
+.env
+.env_build
+# .env.local
+.env.production

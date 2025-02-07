@@ -1,5 +1,5 @@
 # Use an official Node.js runtime as a parent image
-FROM node:23
+FROM node:23 AS build_image
 
 # Set the working directory in the container
 WORKDIR /app
@@ -24,8 +24,14 @@ RUN npm install serve -g
 # COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 # COPY --from=build /app/dist /var/wwww/html/
 
+# FROM nginx:1.27-alpine as PRODUCTION_IMAGE
+# COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+# COPY --from=BUILD_IMAGE /app/dist /var/wwww/html/
+
+
 # Expose the port the app runs on
 EXPOSE 5173
 
 # # Command to run the app
 CMD ["serve", "-s", "dist", "-l", "5173"]
+# CMD ["nginx", "-g", "daemon off;"]
