@@ -12,7 +12,7 @@ import re
 import numpy as np
 import http.client
 from urllib.parse import quote
-
+import google.auth.transport.requests
 from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
 
