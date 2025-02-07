@@ -10,6 +10,9 @@ python-dotenv==1.0.1
 gunicorn
 logging
 requests
+google.oauth2
+google_auth_oauthlib.flow
+google.auth.transport.requests
 
 git+https://github.com/Rafipilot/embedding_bucketing
 
