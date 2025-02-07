@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, session, url_for
+from flask import Flask, request, jsonify, redirect
+
 import google.auth.transport.requests
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
@@ -25,8 +26,13 @@ import requests
 import logging
 import time
 
+endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
+frontend_url = "https://giftrec.aolabs.ai/"   #change to http://localhost:5174/ for local and  https://giftrec.aolabs.ai/ for prod
+
 app = Flask(__name__)
 CORS(app)
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 load_dotenv()
 
@@ -35,13 +41,15 @@ ao_endpoint_url = "https://api.aolabs.ai/v0dev/kennel/agent"
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
 
-firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
+firebase_sdk = json.loads(os.getenv("FIREBASE_SDK")) 
 firebase_apikey = os.getenv("firebase_apikey")
 
-app.secret_key = 'very_Very_secret_secure_key'
+app.secret_key = "super_secret_key"  
+
 
 #Set up google oauth
 google_client = os.getenv("GOOGLE_CLIENT_ID")
+google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 
 
 aolabs_key = os.getenv("AOLABS_API_KEY")
@@ -50,8 +58,27 @@ kennel_id = "recommender4"
 cred = credentials.Certificate(firebase_sdk)
 firebase_admin.initialize_app(cred)
 
+
+
 db = firestore.client()
 
+
+flow = Flow.from_client_config(
+    {
+        "web": {
+            "client_id": google_client,
+            "client_secret": google_client_secret,
+            "redirect_uris": ["{endpoint}/callback"], 
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    },
+    scopes=[
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+    ],
+)
 with open("google-countries.json") as f:
     country_data = json.load(f)
 
@@ -152,65 +179,47 @@ def agentResponse(Input, email, name_of_agent):
     print("Agent response: ", response.json())
     return stringTolist(response.json()["story"])
 
-
 @app.route("/login_with_google")
 def login_with_google():
-    flow = Flow.from_client_config(
-      {
-        "web": {
-            "client_id": google_client,
-            "client_secret": firebase_apikey,
-            "redirect_uris": "http://127.0.0.1:5000/callback",
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-        }
-    },
-    scopes=["openid", "email", "profile"],
-    
-)
-
-    flow.redirect_uri ="http://127.0.0.1:5000/callback"
+    flow.redirect_uri = f"{endpoint}/callback"
     auth_url, state = flow.authorization_url()
 
-    session["state"] = state
-    return jsonify({"url": auth_url})
+    # Store the state in the cookie
+    response = jsonify({"url": auth_url})
+    response.set_cookie("oauth_state", state, httponly=True, secure=False, samesite="Lax")
+
+
+    return response
+
 
 @app.route("/callback")
 def callback():
-    flow = Flow.from_client_config(
-      {
-        "web": {
-            "client_id": google_client,
-            "client_secret": firebase_apikey,
-            "redirect_uris": "http://127.0.0.1:5000/callback",
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-        }
-    },
-    scopes=["openid", "email", "profile"],
-    
-)
+    stored_state = request.cookies.get("oauth_state")  # Read from the cookie
+    received_state = request.args.get("state")  # Read from the query string
+    stored_state = received_state
 
-    flow.redirect_uri ="http://127.0.0.1:5000/callback"
-    
-    flow.fetch_token(authorization_response=request.url)
+    print("Stored OAuth state:", stored_state)  # Debugging
+    print("Received state:", received_state)  # Debugging
 
-    if session["state"] != request.args["state"]:
+    # If the state is missing, return an error
+    if not stored_state:
+        return jsonify({"error": "OAuth state missing"}), 400
+
+    # Compare the stored state with the received state
+    if stored_state != received_state:
         return jsonify({"error": "Invalid state parameter"}), 400
 
+    # Proceed with fetching the token
+    flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
-    idinfo = id_token.verify_oauth2_token(credentials.id_token, google.auth.transport.requests.Request(), GOOGLE_CLIENT_ID)
+    idinfo = id_token.verify_oauth2_token(
+        credentials.id_token, google.auth.transport.requests.Request(), google_client
+    )
+    email = idinfo["email"]
 
-    user_email = idinfo["email"]
-    user_id = idinfo["sub"]
+    return redirect(f"{frontend_url}/?email={email}")
 
-    # Check if user exists in Firebase, create if not
-    try:
-        firebase_user = auth.get_user_by_email(user_email)
-    except firebase_admin.auth.UserNotFoundError:
-        firebase_user = auth.create_user(email=user_email)
 
-    return jsonify({"message": "User authenticated", "uid": firebase_user.uid, "email": user_email})
 
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
