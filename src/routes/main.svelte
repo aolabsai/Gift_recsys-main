@@ -213,7 +213,7 @@
 
     async function login_with_google() {
     try {
-        const response = await fetch("http://127.0.0.1:5000/login_with_google");
+        const response = await fetch(`${baseEndpoint}/login_with_google`);
         const data = await response.json();
 
         if (response.status === 200) {
