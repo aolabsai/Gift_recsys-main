@@ -9,7 +9,6 @@ openai
 python-dotenv
 gunicorn
 
-logging
 requests
 google.oauth2
 google_auth_oauthlib.flow

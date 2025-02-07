@@ -23,7 +23,6 @@ from firebase_admin import firestore
 import numpy as np
 import os
 import requests
-import logging
 import time
 
 endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
@@ -375,9 +374,9 @@ def agent_recommend():
                 if res.status == 200:
                     break  # Exit loop if successful
                 else:
-                    logging.warning(f"Attempt {attempt + 1}: Received HTTP {res.status}")
+                    pass
             except http.client.RemoteDisconnected:
-                logging.error(f"Attempt {attempt + 1}: Connection dropped, retrying...")
+                pass
                 time.sleep(2 ** attempt)  # Exponential backoff (2, 4, 8 sec)
         
         # Read and parse response
@@ -439,7 +438,6 @@ def agent_recommend():
 
 
     except Exception as e:
-        logging.error(f"Error during recommendation: {e}")
         return jsonify({"error": "Error during recommendation processing"}), 500
 
 
