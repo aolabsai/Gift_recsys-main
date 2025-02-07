@@ -29,9 +29,6 @@ COPY requirements.txt /app/
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir google.oauth2 google_auth_oauthlib.flow google.auth.transport.requests
-
 
 # Copy the application code into the container
 COPY . /app/

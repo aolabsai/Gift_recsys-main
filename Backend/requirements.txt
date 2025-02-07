@@ -10,7 +10,9 @@ python-dotenv
 gunicorn
 
 requests
-
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
 
 
 git+https://github.com/Rafipilot/embedding_bucketing
