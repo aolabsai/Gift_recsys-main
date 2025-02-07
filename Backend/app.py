@@ -1,4 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session, url_for
+import google.auth.transport.requests
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
 import random
 from openai import OpenAI
 import json
@@ -34,6 +37,12 @@ rapid_key = os.getenv("RAPID_KEY")
 
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
 firebase_apikey = os.getenv("firebase_apikey")
+
+app.secret_key = 'very_Very_secret_secure_key'
+
+#Set up google oauth
+google_client = os.getenv("GOOGLE_CLIENT_ID")
+
 
 aolabs_key = os.getenv("AOLABS_API_KEY")
 kennel_id = "recommender4"
@@ -142,6 +151,66 @@ def agentResponse(Input, email, name_of_agent):
     response = requests.post(ao_endpoint_url, json=payload, headers=headers)
     print("Agent response: ", response.json())
     return stringTolist(response.json()["story"])
+
+
+@app.route("/login_with_google")
+def login_with_google():
+    flow = Flow.from_client_config(
+      {
+        "web": {
+            "client_id": google_client,
+            "client_secret": firebase_apikey,
+            "redirect_uris": "http://127.0.0.1:5000/callback",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    },
+    scopes=["openid", "email", "profile"],
+    
+)
+
+    flow.redirect_uri ="http://127.0.0.1:5000/callback"
+    auth_url, state = flow.authorization_url()
+
+    session["state"] = state
+    return jsonify({"url": auth_url})
+
+@app.route("/callback")
+def callback():
+    flow = Flow.from_client_config(
+      {
+        "web": {
+            "client_id": google_client,
+            "client_secret": firebase_apikey,
+            "redirect_uris": "http://127.0.0.1:5000/callback",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    },
+    scopes=["openid", "email", "profile"],
+    
+)
+
+    flow.redirect_uri ="http://127.0.0.1:5000/callback"
+    
+    flow.fetch_token(authorization_response=request.url)
+
+    if session["state"] != request.args["state"]:
+        return jsonify({"error": "Invalid state parameter"}), 400
+
+    credentials = flow.credentials
+    idinfo = id_token.verify_oauth2_token(credentials.id_token, google.auth.transport.requests.Request(), GOOGLE_CLIENT_ID)
+
+    user_email = idinfo["email"]
+    user_id = idinfo["sub"]
+
+    # Check if user exists in Firebase, create if not
+    try:
+        firebase_user = auth.get_user_by_email(user_email)
+    except firebase_admin.auth.UserNotFoundError:
+        firebase_user = auth.create_user(email=user_email)
+
+    return jsonify({"message": "User authenticated", "uid": firebase_user.uid, "email": user_email})
 
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():

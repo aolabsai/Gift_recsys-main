@@ -1,7 +1,7 @@
 <script>
     import { onMount } from "svelte";
 
-    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    const baseEndpoint = "http://127.0.0.1:5000"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
 
     let countries = [];
     let selectedCountry = "US";
@@ -193,6 +193,14 @@
         savedProducts = res["products"];
     }
 
+    async function login_with_google()  {
+        const response = await fetch("http://127.0.0.1:5000/login_with_google");
+        const data = await response.json();
+
+        // Open Google OAuth login page
+        window.location.href = data.url;
+    }
+
     function updateAgentInUse(email, name) {
         agentInUse = [email, name];
         console.log("Agent is use: ", agentInUse);
@@ -251,7 +259,7 @@
     <div id="login">
         <img id="start_page_img" alt="start_page_img" src="https://s3-alpha-sig.figma.com/img/6be8/76b1/a59b0193952b1c07665ec0ef5458555a?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=a~WBMZovxZB0Sc1UUxuNdTn3sjklDGreg043~LKVo-9y17PIz2N~wrHeQX0jIBPb7988ebJ8ANk6ZWpuqYYEMiUkBTjdmakVRSF6AoyHykjyVjX0kx38VMZAu-2QFkvAX4G5IKOGagnC~pXKnfsdCp9JBxoANEb2mZE5Cut8aelKu~Y8ojo2l9uC4FEl3TdMjfBXy4qEYg5fWdRZ1ZHWYLcvo1-WYJCmmvBZsjjQ9xtO11zKl-euHxuXrKh2ugla2OsrbLmuvOneizuJv7g1lQdNcGlTIdx6Z9uuh9hTiXLptTNbuxg27IUDQi4OXn8L8EjkoslCmdN7pB8dSmIE7w__">
             <h1 id="rainbow_header">Delightful gift giving starts here</h1>
-       
+            <button on:click={login_with_google}>Sign in with Google</button>
             <label>Email: <input type="email" bind:value={email}></label>
             <label>Password: <input type="password" bind:value={password}></label>
             <button id="main_button" on:click={() => { login(); getAgents(); }}>Continue</button>
