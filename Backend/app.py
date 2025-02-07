@@ -28,8 +28,8 @@ import os
 import requests
 import time
 
-endpoint = "http://127.0.0.1:5000"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-frontend_url = "http://localhost:5174/"   #change to http://localhost:5174/ for local and  https://giftrec.aolabs.ai/ for prod
+endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
+frontend_url = "https://gift-recsys-main.onrender.com/"   #change to http://localhost:5174/ for local and  https://giftrec.aolabs.ai/ for prod
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"

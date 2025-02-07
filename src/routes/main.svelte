@@ -4,7 +4,7 @@
 
 
       
-    const baseEndpoint = "http://127.0.0.1:5000"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
 
     let countries = [];
     let selectedCountry = "US";
