@@ -67,7 +67,7 @@ flow = Flow.from_client_config(
         "web": {
             "client_id": google_client,
             "client_secret": google_client_secret,
-            "redirect_uris": ["{endpoint}/callback"], 
+            "redirect_uris": [f"{endpoint}/callback"], 
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
         }
