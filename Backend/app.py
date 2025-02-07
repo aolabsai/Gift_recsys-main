@@ -17,7 +17,6 @@ from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
 
 from flask_cors import CORS
-import google.auth
 
 from firebase_admin import credentials, auth
 import firebase_admin
