@@ -1,15 +1,19 @@
 #git+https://github.com/aolabsai/ao_arch
 
 
-firebase_admin==6.6.0
-Flask==3.1.0
-Flask_Cors==5.0.0
-numpy==2.2.1
-openai==1.59.8
-python-dotenv==1.0.1
+firebase_admin
+Flask
+Flask_Cors
+numpy
+openai
+python-dotenv
 gunicorn
-logging
+
 requests
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+
 
 git+https://github.com/Rafipilot/embedding_bucketing
 

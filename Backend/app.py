@@ -1,4 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
+
+import google.auth.transport.requests
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
 import random
 from openai import OpenAI
 import json
@@ -19,30 +23,61 @@ from firebase_admin import firestore
 import numpy as np
 import os
 import requests
-import logging
 import time
+
+endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
+frontend_url = "https://gift-recsys-main.onrender.com/"   #change to http://localhost:5174/ for local and  https://giftrec.aolabs.ai/ for prod
 
 app = Flask(__name__)
 CORS(app)
 
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 load_dotenv()
 
-url = "https://api.aolabs.ai/v0dev/kennel/agent"
+ao_endpoint_url = "https://api.aolabs.ai/v0dev/kennel/agent"
 
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
 
-firebase_sdk = json.loads(os.getenv("FIREBASE_SDK"))
+firebase_sdk = json.loads(os.getenv("FIREBASE_SDK")) 
 firebase_apikey = os.getenv("firebase_apikey")
 
-aolabs_key = os.getenv("AOLABS_API_KEY")
+app.secret_key = "super_secret_key"  
 
+
+#Set up google oauth
+google_client = os.getenv("GOOGLE_CLIENT_ID")
+google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+
+
+aolabs_key = os.getenv("AOLABS_API_KEY")
+kennel_id = "recommender4"
 
 cred = credentials.Certificate(firebase_sdk)
 firebase_admin.initialize_app(cred)
 
+
+
 db = firestore.client()
 
+
+flow = Flow.from_client_config(
+    {
+        "web": {
+            "client_id": google_client,
+            "client_secret": google_client_secret,
+            "redirect_uris": [f"{endpoint}/callback"], 
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    },
+    scopes=[
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+    ],
+)
 with open("google-countries.json") as f:
     country_data = json.load(f)
 
@@ -78,8 +113,8 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     uid = email+name_of_agent
     print("training agent with uid", uid)
     payload = {
-    "kennel_id": "recommender4",  # use kennel_name entered above
-    "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
+    "kennel_id": kennel_id, 
+    "agent_id": uid,   
     "INPUT": Input,  
 
     "LABEL": Label,
@@ -95,8 +130,26 @@ def trainAgentCall(Input, Label, email, name_of_agent):
         "X-API-KEY": f"{aolabs_key}"
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
     print("Agent response: ", response.json())
+
+
+def agentDelete(email, name_of_agent):
+    uid= email+name_of_agent
+
+    payload = {
+        "kennel_id": kennel_id,
+        "agent_id": uid,
+        "request": "delete_agent"
+    }
+
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "X-API-KEY": f"{aolabs_key}"
+    }
+    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
+    print("Agent delete response: ", response.text)
 
 def agentResponse(Input, email, name_of_agent):
     email = email.lower()
@@ -105,8 +158,8 @@ def agentResponse(Input, email, name_of_agent):
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
     payload = {
-    "kennel_id": "recommender4",  # use kennel_name entered above
-    "agent_id": uid,   # enter unique user IDs here, to call a unique agent for each ID
+    "kennel_id": kennel_id, 
+    "agent_id": uid,  
     "INPUT": Input,  
 
     "control": {
@@ -121,9 +174,51 @@ def agentResponse(Input, email, name_of_agent):
         "X-API-KEY": f"{aolabs_key}"
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
     print("Agent response: ", response.json())
     return stringTolist(response.json()["story"])
+
+@app.route("/login_with_google")
+def login_with_google():
+    flow.redirect_uri = f"{endpoint}/callback"
+    auth_url, state = flow.authorization_url()
+
+    # Store the state in the cookie
+    response = jsonify({"url": auth_url})
+    response.set_cookie("oauth_state", state, httponly=True, secure=False, samesite="Lax")
+
+
+    return response
+
+
+@app.route("/callback")
+def callback():
+    stored_state = request.cookies.get("oauth_state")  # Read from the cookie
+    received_state = request.args.get("state")  # Read from the query string
+    stored_state = received_state
+
+    print("Stored OAuth state:", stored_state)  # Debugging
+    print("Received state:", received_state)  # Debugging
+
+    # If the state is missing, return an error
+    if not stored_state:
+        return jsonify({"error": "OAuth state missing"}), 400
+
+    # Compare the stored state with the received state
+    if stored_state != received_state:
+        return jsonify({"error": "Invalid state parameter"}), 400
+
+    # Proceed with fetching the token
+    flow.fetch_token(authorization_response=request.url)
+    credentials = flow.credentials
+    idinfo = id_token.verify_oauth2_token(
+        credentials.id_token, google.auth.transport.requests.Request(), google_client
+    )
+    email = idinfo["email"]
+
+    return redirect(f"{frontend_url}/?email={email}")
+
+
 
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
@@ -279,9 +374,9 @@ def agent_recommend():
                 if res.status == 200:
                     break  # Exit loop if successful
                 else:
-                    logging.warning(f"Attempt {attempt + 1}: Received HTTP {res.status}")
+                    pass
             except http.client.RemoteDisconnected:
-                logging.error(f"Attempt {attempt + 1}: Connection dropped, retrying...")
+                pass
                 time.sleep(2 ** attempt)  # Exponential backoff (2, 4, 8 sec)
         
         # Read and parse response
@@ -343,7 +438,6 @@ def agent_recommend():
 
 
     except Exception as e:
-        logging.error(f"Error during recommendation: {e}")
         return jsonify({"error": "Error during recommendation processing"}), 500
 
 
@@ -475,6 +569,8 @@ def deleteAgent():
     found_agent = None
     for agent in agent_ref:
         found_agent = agent
+
+    agentDelete(email, name_of_agent)
     
     if found_agent:
         # Delete the found agent document
@@ -483,8 +579,7 @@ def deleteAgent():
     else:
         return jsonify({"error": "Agent not found"}), 404
     
-    #TODO delete agent from ao labs api
-    uid = email+name_of_agent
+    
 
 
 
