@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, redirect, session
 import jwt
 import datetime
+import google.auth.transport.requests
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
@@ -12,11 +13,12 @@ import re
 import numpy as np
 import http.client
 from urllib.parse import quote
-import google.auth.transport.requests
+
 from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
 
 from flask_cors import CORS
+import google.auth
 
 from firebase_admin import credentials, auth
 import firebase_admin
@@ -31,8 +33,7 @@ frontend_url = "https://gift-recsys-main.onrender.com/"   #change to http://loca
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
-CORS(app, supports_credentials=True)
-
+CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
