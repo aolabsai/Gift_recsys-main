@@ -34,7 +34,7 @@ frontend_url = "https://gift-recsys-main.onrender.com"   #change to http://local
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
 CORS(app, supports_credentials=True, origins=[
-    "http://localhost:5174",
+    "http://localhost:5173",
     "https://gift-recsys-main.onrender.com",
     "https://giftrec.aolabs.ai"
 ])

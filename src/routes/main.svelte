@@ -4,7 +4,7 @@
 
 
       
-    const baseEndpoint = "http://127.0.0.1:5000"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
 
     let countries = [];
     let selectedCountry = "US";
@@ -399,7 +399,7 @@
             showrecommendationPage=false;
             deleteAgent();
         }}>Delete Agent</button>
-        <h1>Finding the perfect gift for: {agentInUse}</h1>
+        <h1>Finding the perfect gift for: {agentInUse[1]}</h1>
         <h4>Budget</h4>
         <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
         <span>{budget}$</span>
@@ -432,7 +432,7 @@
             <p>Genre: {genre}</p>
             <p>Target: {target}</p>
 
-            <div><a id="buy_now_link" href={link} target="_blank">Buy Now </a></div>
+            <a id="buy_now_link" href={link} target="_blank">Buy Now </a>
             <button id="save_button" on:click={saveProduct} >Save for later</button>
             
             <p>Recommendation Score: {recommendationScore}%</p>
