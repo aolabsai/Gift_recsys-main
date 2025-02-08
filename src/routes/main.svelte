@@ -1,5 +1,6 @@
 <script>
     let email = "";
+
     import { onMount } from "svelte";
 
 
@@ -40,7 +41,7 @@
     let number_of_products_skipped = 0;
     let recommendation_threshold = 50; // active threshold system
 
-
+    let stopButtonClicked = false;
 
     async function fetchCountries() {
         const response = await fetch('/google-countries.json');
@@ -65,6 +66,7 @@
 
     async function getRecommendation() {
         findGifts();
+        console.log("Stop button clicked: ",stopButtonClicked)
         isLoading = true;
 
         const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
@@ -94,7 +96,10 @@
         if (agentData.recommendation_score <recommendation_threshold) { 
             console.log("Recommendation score is less than threshold, getting another recommendation");
             recommendation_threshold -= 20; // bring down threshold
-            getRecommendation();
+            if (!stopButtonClicked) {
+                getRecommendation();
+                stopButtonClicked = false
+            }
             number_of_products_skipped += 1;
         }
         else {
@@ -416,12 +421,17 @@
         {/if}
 
         {#if isLoading}
-        <div class="spinner-container">
-            <div class="spinner"></div>
-        </div>
+            <div class="spinner-container">
+                {#if isLoading&&showrecommendationPage}
+                    <button id="main_button" on:click={() =>  {
+                        stopButtonClicked = true
+                    }
+                        }>Stop</button>
+                {/if}
 
-
-      {/if}
+                <div class="spinner"></div>
+            </div>
+        {/if}
 
         {#if recommendedProduct&&showrecommendationPage}
         
