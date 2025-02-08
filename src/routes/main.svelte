@@ -4,7 +4,7 @@
 
 
       
-    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    const baseEndpoint = "http://127.0.0.1:5000"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
 
     let countries = [];
     let selectedCountry = "US";
@@ -206,6 +206,7 @@
 
         if (token)  {
             const response = await fetch(`${baseEndpoint}/check_login`, {
+            method: "GET",
             headers: { "Content-Type": "application/json" , "Authorization": token},
 
         });
@@ -225,7 +226,7 @@
     // Google OAuth Login function
     async function loginWithGoogle() {
         try {
-            const response = await fetch(`${baseEndpoint}/login_with_google`);
+            const response = await fetch(`${baseEndpoint}/login_with_google`, {method: "POST",});
             const data = await response.json();
             if (response.status === 200) {
                 window.location.href = data.url; //redirect to google 
