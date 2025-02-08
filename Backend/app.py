@@ -250,8 +250,8 @@ def callback():
     }
     token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
-    # Redirect the user to the frontend with the token.
-    return redirect(f"{frontend_url}/auth?token={token}")
+    #redirect the user to the frontend with the token.
+    return redirect(f"{frontend_url}/?token={token}")
 
 
 @app.route("/check_login", methods=['GET'])
