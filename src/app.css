@@ -42,6 +42,18 @@ main {
 }
 
 
+#banner {
+  width: 100%;
+
+  background-color: #76c8e6; 
+  color: rgb(0, 0, 0);
+  text-align: center;
+  line-height: 15px; 
+  position: fixed; 
+
+}
+
+
 #savedProducts  {
   padding: 0.9rem;
 }
