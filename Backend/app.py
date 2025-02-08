@@ -1,8 +1,11 @@
-from flask import Flask, request, jsonify, redirect
-
+from flask import Flask, request, jsonify, redirect, session
+import jwt
+import datetime
 import google.auth.transport.requests
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
+from google.auth.transport.requests import Request
+
 import random
 from openai import OpenAI
 import json
@@ -15,7 +18,7 @@ from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
 
 from flask_cors import CORS
-
+import google.auth
 
 from firebase_admin import credentials, auth
 import firebase_admin
@@ -26,10 +29,11 @@ import requests
 import time
 
 endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-frontend_url = "https://giftrec.aolabs.ai/"   #change to http://localhost:5174/ for local and  https://giftrec.aolabs.ai/ for prod
+frontend_url = "https://gift-recsys-main.onrender.com/"   #change to http://localhost:5174/ for local and  https://giftrec.aolabs.ai/ for prod
 
 app = Flask(__name__)
-CORS(app)
+app.secret_key = "super_secret_key"
+CORS(app, supports_credentials=True, origins=["http://localhost:5174"])
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
@@ -43,9 +47,8 @@ rapid_key = os.getenv("RAPID_KEY")
 firebase_sdk = json.loads(os.getenv("FIREBASE_SDK")) 
 firebase_apikey = os.getenv("firebase_apikey")
 
-app.secret_key = "super_secret_key"  
-
-
+JWT_SECRET_KEY = 'your_secret_key'
+JWT_ALGORITHM = 'HS256'
 #Set up google oauth
 google_client = os.getenv("GOOGLE_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
@@ -105,6 +108,14 @@ def listTostring(s):
 
 def stringTolist(s):
     return [int(i) for i in s]
+
+def generate_token(user_email):
+    payload = {
+        'email': user_email,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
+    }
+    token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+    return token
 
 def trainAgentCall(Input, Label, email, name_of_agent):
     Input = listTostring(Input)
@@ -180,44 +191,72 @@ def agentResponse(Input, email, name_of_agent):
 
 @app.route("/login_with_google")
 def login_with_google():
-    flow.redirect_uri = f"{endpoint}/callback"
+    """
+    Initiates the Google OAuth2 login flow and returns the authorization URL.
+    """
+    flow.redirect_uri = f"{endpoint}/callback"  # Adjust redirect URI
     auth_url, state = flow.authorization_url()
-
-    # Store the state in the cookie
-    response = jsonify({"url": auth_url})
-    response.set_cookie("oauth_state", state, httponly=True, secure=False, samesite="Lax")
-
-
-    return response
-
+    
+    # Store the state in the session for later validation
+    session["oauth_state"] = state
+    print("session", session)
+    return jsonify({"url": auth_url})
 
 @app.route("/callback")
 def callback():
-    stored_state = request.cookies.get("oauth_state")  # Read from the cookie
-    received_state = request.args.get("state")  # Read from the query string
-    stored_state = received_state
+    """
+    Handles the callback from Google OAuth, verifies the token, and redirects the user with JWT.
+    """
+    stored_state = session.get("email")  # Corrected variable name
+    received_state = request.args.get("state")
+    print("session", session)
 
-    print("Stored OAuth state:", stored_state)  # Debugging
-    print("Received state:", received_state)  # Debugging
 
-    # If the state is missing, return an error
-    if not stored_state:
-        return jsonify({"error": "OAuth state missing"}), 400
-
-    # Compare the stored state with the received state
-    if stored_state != received_state:
-        return jsonify({"error": "Invalid state parameter"}), 400
-
-    # Proceed with fetching the token
+    # Fetch the token from the authorization response
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
+
+    # Verify the ID token from Google
     idinfo = id_token.verify_oauth2_token(
-        credentials.id_token, google.auth.transport.requests.Request(), google_client
+        credentials.id_token, Request(), google_client
     )
+    
     email = idinfo["email"]
 
-    return redirect(f"{frontend_url}/?email={email}")
+    # Generate a JWT token with user info
+    payload = {
+        'email': email,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
+    }
+    token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
+    # Redirect the user to the frontend with the token in the query parameter
+    return redirect(f"{frontend_url}/auth?token={token}")
+
+
+@app.route("/check_login")
+def check_login():
+    """
+    Checks the login status by verifying the JWT token sent by the client.
+    """
+    token = request.headers.get("Authorization")
+    if token:
+        token = token.replace("Bearer ", "")  # Remove 'Bearer ' prefix
+        
+        try:
+            # Decode the token to verify its validity
+            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            email = payload.get('email')
+            
+            # Return user info (email) if token is valid
+            return jsonify({"status": "authenticated", "email": email})
+        
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+    else:
+        return jsonify({"status": "not_authenticated"}), 401
 
 
 @app.route('/get-gift-categories', methods=['POST'])
