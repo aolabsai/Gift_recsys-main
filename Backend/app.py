@@ -204,33 +204,55 @@ def login_with_google():
     print("session", session)
     return jsonify({"url": auth_url})
 
+from flask import url_for
+
 @app.route("/callback", methods=['GET'])
 def callback():
-
-    stored_state = session.get("oauth_state")  
-    received_state = request.args.get("state")
-    print("session", session)
-
-    # Fetch the token from the authorization response using the full URL (which includes query params)
+    state = session.get("oauth_state")
+    
+    # create a new Flow 
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": google_client,
+                "client_secret": google_client_secret,
+                "redirect_uris": [f"{endpoint}/callback"],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=[
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+        ],
+        state=state
+    )
+    
+    # Explicitly set the redirect URI to ensure it's included in the token request.
+    flow.redirect_uri = f"{endpoint}/callback"
+    
+    # Fetch the token using the complete authorization response URL (with code, state, etc.)
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
 
-    # Verify the ID token from Google
+    # Verify the ID token from Google.
     idinfo = id_token.verify_oauth2_token(
         credentials.id_token, Request(), google_client
     )
     
     email = idinfo["email"]
 
-    # Generate a JWT token with user info
+    # Generate your JWT token (or process the user info as needed).
     payload = {
         'email': email,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour, idk maybe make this less for prod?
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }
     token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
-    # redirect the user to the frontend with the token in the query parameter
+    # Redirect the user to the frontend with the token.
     return redirect(f"{frontend_url}/auth?token={token}")
+
 
 @app.route("/check_login", methods=['GET'])
 def check_login():
