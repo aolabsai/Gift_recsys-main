@@ -1,3 +1,7 @@
+#git files
+.gitignore
+README.md
+
 #don't need Backend in frontend image
 Backend/
 

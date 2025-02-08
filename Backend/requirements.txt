@@ -13,6 +13,7 @@ httpx==0.25.0
 python-dotenv==1.0.0
 firebase-admin==6.2.0
 requests==2.31.0
+gunicorn
 
 git+https://github.com/Rafipilot/embedding_bucketing
 
