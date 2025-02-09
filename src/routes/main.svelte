@@ -447,8 +447,8 @@
             
             <p>Recommendation Score: {recommendationScore}%</p>
 
-            <button id="main_button" on:click={trainAgentPos}>Recommend More</button>
-            <button id="main_button" on:click={trainAgentNeg}>Recommend Less</button>
+            <button id="main_button" on:click={trainAgentPos}>Recommend More Products Like This</button>
+            <button id="main_button" on:click={trainAgentNeg}>Recommend Less Products Like This</button>
         
         {/if}
 
