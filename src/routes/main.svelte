@@ -1,5 +1,6 @@
 <script>
     let email = "";
+
     import { onMount } from "svelte";
 
 
@@ -41,7 +42,7 @@
     let number_of_products_skipped = 0;
     let recommendation_threshold = 50; // active threshold system
 
-
+    let stopButtonClicked = false;
 
     async function fetchCountries() {
         const response = await fetch("/google-countries.json");
@@ -66,6 +67,7 @@
 
     async function getRecommendation() {
         findGifts();
+        console.log("Stop button clicked: ",stopButtonClicked)
         isLoading = true;
 
         const searchTerm =
@@ -98,7 +100,10 @@
                 "Recommendation score is less than threshold, getting another recommendation",
             );
             recommendation_threshold -= 20; // bring down threshold
-            getRecommendation();
+            if (!stopButtonClicked) {
+                getRecommendation();
+                stopButtonClicked = false
+            }
             number_of_products_skipped += 1;
         } else {
             console.log(
@@ -217,6 +222,7 @@
 
         if (token)  {
             const response = await fetch(`${baseEndpoint}/check_login`, {
+            method: "GET",
             headers: { "Content-Type": "application/json" , "Authorization": token},
 
         });
@@ -236,7 +242,7 @@
     // Google OAuth Login function
     async function loginWithGoogle() {
         try {
-            const response = await fetch(`${baseEndpoint}/login_with_google`);
+            const response = await fetch(`${baseEndpoint}/login_with_google`, {method: "POST",});
             const data = await response.json();
             if (response.status === 200) {
                 window.location.href = data.url; //redirect to google 
@@ -443,36 +449,36 @@
     <div id="recommendation_page">
         <div id="recommendation_page_left"></div>
         {#if showrecommendationPage && loggedin}
-            <button
-                on:click={() => {
-                    showrecommendationPage = false;
-                    deleteAgent();
-                }}>Delete Agent</button
-            >
-            <h1>Finding the perfect gift for: {agentInUse}</h1>
-            <h4>Budget</h4>
-            <input
-                type="range"
-                min="10"
-                max="1000"
-                step="5"
-                bind:value={budget}
-            />
-            <span>{budget}$</span>
-            <input type="text" placeholder="Occasion" bind:value={occasion} />
-            <label
-                >Season
-                <select bind:value={season}>
-                    <option>Winter</option>
-                    <option>Spring</option>
-                    <option>Summer</option>
-                    <option>Fall</option>
-                </select></label
-            >
+
+        <button on:click={() => { 
+            showrecommendationPage=false;
+            deleteAgent();
+        }}>Delete Agent</button>
+        <h1>Finding the perfect gift for: {agentInUse[1]}</h1>
+        <h4>Budget</h4>
+        <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
+        <span>{budget}$</span>
+        <input type="text" placeholder="Occasion" bind:value={occasion}>
+        <label>Season
+            <select bind:value={season}>
+                <option>Winter</option>
+                <option>Spring</option>
+                <option>Summer</option>
+                <option>Fall</option>
+        </label>
+
+
         {/if}
 
         {#if isLoading}
             <div class="spinner-container">
+                {#if isLoading&&showrecommendationPage}
+                    <button id="main_button" on:click={() =>  {
+                        stopButtonClicked = true
+                    }
+                        }>Stop</button>
+                {/if}
+
                 <div class="spinner"></div>
             </div>
         {/if}
@@ -489,21 +495,14 @@
             <p>Genre: {genre}</p>
             <p>Target: {target}</p>
 
-            <div>
-                <a id="buy_now_link" href={link} target="_blank">Buy Now </a>
-            </div>
-            <button id="save_button" on:click={saveProduct}
-                >Save for later</button
-            >
-
+            <a id="buy_now_link" href={link} target="_blank">Buy Now </a>
+            <button id="save_button" on:click={saveProduct} >Save for later</button>
+            
             <p>Recommendation Score: {recommendationScore}%</p>
 
-            <button id="main_button" on:click={trainAgentPos}
-                >Recommend More</button
-            >
-            <button id="main_button" on:click={trainAgentNeg}
-                >Recommend Less</button
-            >
+            <button id="main_button" on:click={trainAgentPos}>Recommend More Products Like This</button>
+            <button id="main_button" on:click={trainAgentNeg}>Recommend Less Products Like This</button>
+        
         {/if}
 
         {#if showrecommendationPage && loggedin}

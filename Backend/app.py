@@ -29,12 +29,15 @@ import requests
 import time
 
 endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-# frontend_url = "https://gift-recsys-main.onrender.com/"   #change to http://localhost:5174/ for local and  https://giftrec.aolabs.ai/ for prod
-frontend_url = "http://localhost:5173/"
+frontend_url = "https://gift-recsys-main.onrender.com"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+CORS(app, supports_credentials=True, origins=[
+    "http://localhost:5173",
+    "https://gift-recsys-main.onrender.com",
+    "https://giftrec.aolabs.ai"
+])
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
@@ -190,11 +193,9 @@ def agentResponse(Input, email, name_of_agent):
     print("Agent response: ", response.json())
     return stringTolist(response.json()["story"])
 
-@app.route("/login_with_google")
+@app.route("/login_with_google", methods=['POST'])
 def login_with_google():
-    """
-    Initiates the Google OAuth2 login flow and returns the authorization URL.
-    """
+
     flow.redirect_uri = f"{endpoint}/callback"  # Adjust redirect URI
     auth_url, state = flow.authorization_url()
     
@@ -203,53 +204,68 @@ def login_with_google():
     print("session", session)
     return jsonify({"url": auth_url})
 
-@app.route("/callback")
+from flask import url_for
+
+@app.route("/callback", methods=['GET'])
 def callback():
-    """
-    Handles the callback from Google OAuth, verifies the token, and redirects the user with JWT.
-    """
-    stored_state = session.get("email")  # Corrected variable name
-    received_state = request.args.get("state")
-    print("session", session)
-
-
-    # Fetch the token from the authorization response
+    state = session.get("oauth_state")
+    
+    # create a new Flow 
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": google_client,
+                "client_secret": google_client_secret,
+                "redirect_uris": [f"{endpoint}/callback"],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=[
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+        ],
+        state=state
+    )
+    
+    # Explicitly set the redirect URI to ensure it's included in the token request.
+    flow.redirect_uri = f"{endpoint}/callback"
+    
+    # Fetch the token using the complete authorization response URL (with code, state, etc.)
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
 
-    # Verify the ID token from Google
+    # Verify the ID token from Google.
     idinfo = id_token.verify_oauth2_token(
         credentials.id_token, Request(), google_client
     )
     
     email = idinfo["email"]
 
-    # Generate a JWT token with user info
+    # Generate your JWT token (or process the user info as needed).
     payload = {
         'email': email,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }
     token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
-    # Redirect the user to the frontend with the token in the query parameter
-    return redirect(f"{frontend_url}/auth?token={token}")
+    #redirect the user to the frontend with the token.
+    return redirect(f"{frontend_url}/?token={token}")
 
 
-@app.route("/check_login")
+@app.route("/check_login", methods=['GET'])
 def check_login():
-    """
-    Checks the login status by verifying the JWT token sent by the client.
-    """
+
     token = request.headers.get("Authorization")
     if token:
-        token = token.replace("Bearer ", "")  # Remove 'Bearer ' prefix
+        token = token.replace("Bearer ", "") 
         
         try:
-            # Decode the token to verify its validity
+            # decode the secret key
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
             email = payload.get('email')
             
-            # Return user info (email) if token is valid
             return jsonify({"status": "authenticated", "email": email})
         
         except jwt.ExpiredSignatureError:
