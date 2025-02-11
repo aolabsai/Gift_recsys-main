@@ -8,6 +8,9 @@
     // const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
     const baseEndpoint = "http://127.0.0.1:5000"; 
 
+    // will be used for changing url for development and production without manually changing the url
+    // const baseEndpoint = import.meta.env.VITE_BACKEND_URL;
+
     let countries = [];
     let selectedCountry = "US";
     let age = 18;
