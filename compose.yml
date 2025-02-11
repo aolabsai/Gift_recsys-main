@@ -1,18 +1,13 @@
 services:
   backend:
     build:
-      secrets:
-        - env
-        - .env
-        - BUILD_SECRET
       context: ./Backend
       platforms:
         - linux/amd64
         # - linux/arm64
     ports:
       - "5000:5000"
-    secrets:
-      - env
+
 
   frontend:
     build: 
@@ -24,11 +19,3 @@ services:
       - "5173:5173"
     depends_on:
       - backend
-
-secrets:
-  env:
-    file: .env_build
-  BUILD_SECRET:
-    file: .env
-  .env:
-    file: .env
