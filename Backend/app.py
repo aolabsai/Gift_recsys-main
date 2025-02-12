@@ -29,16 +29,11 @@ import requests
 import time
 
 endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-frontend_url = "https://giftrec.aolabs.ai/"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
+frontend_url = "https://giftrec.aolabs.ai"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
-CORS(app, supports_credentials=True, origins=[
-    "http://localhost:5173",
-    "https://gift-recsys-main.onrender.com",
-    "https://giftrec.aolabs.ai"
-])
-
+CORS(app)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 load_dotenv()

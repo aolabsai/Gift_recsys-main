@@ -344,17 +344,17 @@
             <h1 id="grey_small_header">Create a new agent</h1>
 
             
-            <label>Name <input placeholder="Agent Name" type="text" bind:value={newAgentName}></label>
+            <label>Who are you looking to buy something for? <input placeholder="Agent Name" type="text" bind:value={newAgentName}></label>
 
-            <label>Country:
+            <label>Where do they live?:
                 <select bind:value={selectedCountry}>
                     {#each countries as country}
                         <option value={country.country_code}>{country.country_name}</option>
                     {/each}
                 </select>
             </label>
-            <label>Age: <input type="number" bind:value={age} min="0" max="100" /></label>
-            <label>Gender:
+            <label>How old are they?: <input type="number" bind:value={age} min="0" max="100" /></label>
+            <label>What gender are they?:
                 <select bind:value={gender}>
                     <option>Male</option>
                     <option>Female</option>
@@ -362,7 +362,7 @@
                     <option>Prefer not to say</option>
                 </select>
             </label>
-            <label>Extra Info: <input type="text" bind:value={extraInfo} /></label>
+            <label>Now get creative, if you were to introduce me, what would you say?: <input type="text" bind:value={extraInfo} /></label>
 
             <button id="main_button" on:click={() => { createNewAgent(); }}>Create</button>
             <h1 id="grey_small_header">Or Continue Where You Left Off</h1>
@@ -405,11 +405,11 @@
             deleteAgent();
         }}>Delete Agent</button>
         <h1>Finding the perfect gift for: {agentInUse[1]}</h1>
-        <h4>Budget</h4>
+        <h4>What's the budget?</h4>
         <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
         <span>{budget}$</span>
-        <input type="text" placeholder="Occasion" bind:value={occasion}>
-        <label>Season
+        <label>What's the occasion you're planning on giving something<input type="text" placeholder="Is it a birthday or anniversary?" bind:value={occasion}></label>
+        <label>What is the season? (I don't want to recommend a swimming suit in winter!)
             <select bind:value={season}>
                 <option>Winter</option>
                 <option>Spring</option>
@@ -439,8 +439,6 @@
             <img src={recommendedProduct.photo} alt={recommendedProduct.name} id="recommend_product_img" />
             <p>Name: {recommendedProduct.name}</p>
             <p>Price: {recommendedProduct.price}</p>
-            <p>Genre: {genre}</p>
-            <p>Target: {target}</p>
 
             <a id="buy_now_link" href={link} target="_blank">Buy Now </a>
             <button id="save_button" on:click={saveProduct} >Save for later</button>
