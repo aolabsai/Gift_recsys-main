@@ -29,7 +29,7 @@ import requests
 import time
 
 endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-frontend_url = "https://giftrec.aolabs.ai"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
+frontend_url = " https://giftrec.aolabs.ai"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
@@ -185,7 +185,6 @@ def agentResponse(Input, email, name_of_agent):
     }
 
     response = requests.post(ao_endpoint_url, json=payload, headers=headers)
-    print("Agent response: ", response.json())
     return stringTolist(response.json()["story"])
 
 @app.route("/login_with_google", methods=['POST'])
@@ -196,7 +195,6 @@ def login_with_google():
     
     # Store the state in the session for later validation
     session["oauth_state"] = state
-    print("session", session)
     return jsonify({"url": auth_url})
 
 from flask import url_for
@@ -274,7 +272,6 @@ def check_login():
 @app.route('/get-gift-categories', methods=['POST'])
 def get_gift_categories():
     data = request.json["data_to_send"]
-    print(data)
     budget = data["budget"]
     aiu = data["agentInUse"]
     email = aiu[0]
@@ -291,7 +288,6 @@ def get_gift_categories():
         agent_document_id = agent.id  
 
     if not agent_data:
-        print("Agent not found for", email, name_of_agent)
         return jsonify({"error": "Agent not found for the given email and name"}), 400
     
     print("Found agent with document ID:", agent_document_id)
@@ -316,8 +312,8 @@ def get_gift_categories():
     print("Gift cats: ",gift_categories) 
     return jsonify({"categories": gift_categories})
 
-@app.route('/get-product', methods=['POST'])
-def get_random_product():
+@app.route('/get_product', methods=['POST'])
+def get_product():
     data = request.json
     query = data.get("query", "")
     budget = data.get("budget", 50)
@@ -341,15 +337,11 @@ def get_random_product():
     
     print("Found agent with document ID:", agent_document_id)
 
-
-    age = db.collection('Agents').document(agent_document_id).get().to_dict().get('age')
-    gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')
-
     query = re.sub(r'^\d+\.\s*', '', query).strip()
     encoded_query = quote(query)
     encoded_query = (encoded_query)
     
-    print("Query: ", encoded_query)
+
 
     conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
     headers = {
@@ -358,13 +350,13 @@ def get_random_product():
     }
 
     for i in range(5):
-        print(f"Attempt {i + 1}: Fetching products...")
 
-        print("in try")
+
+
         conn.request("GET", f"/search?query={encoded_query}&page=1&country=US&sort_by=RELEVANCE&min_price={min_price}&max_price={budget}&product_condition=ALL&is_prime=false&deals_and_discounts=NONE", headers=headers)
         res = conn.getresponse()
         data = json.loads(res.read().decode("utf-8"))
-        print("Data: ", data)
+
         products = data.get("data", {}).get("products", [])
         if not products:
             print("error: No products found")
@@ -372,7 +364,7 @@ def get_random_product():
 
         random.shuffle(products)
         product = products[0]
-        print("Product: ",product)
+        print("name: ", product["product_title"])
         return jsonify({
             "asin": product["asin"],
             "name": product["product_title"],
@@ -380,6 +372,8 @@ def get_random_product():
             "photo": product.get("product_photo", "none"),
             "link": product.get("product_url"),
         })
+    
+    
 
 
     return jsonify({"error": "Failed to fetch products after multiple retries"}), 500

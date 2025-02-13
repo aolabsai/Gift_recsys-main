@@ -15,6 +15,10 @@ main {
   padding: 20px;
 }
 
+#explainer_text {
+  padding: 5rem;
+}
+
 #rainbow_header {
   background: linear-gradient(to right, red, orange, rgb(190, 190, 91), green, blue, indigo, violet);
   -webkit-background-clip: text;
@@ -55,7 +59,7 @@ main {
 
 
 #savedProducts  {
-  padding: 0.9rem;
+  padding: 1.5rem;
 }
 
 #divider_between_saved_products {
