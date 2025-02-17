@@ -27,10 +27,6 @@ GOOGLE_CLIENT_ID = "key_here"
 
 GOOGLE_CLIENT_SECRET = "key_here"
 ```
-and .env_build which contains (this will probably be changed to .env.build or something similar)
-```
-ao_github_PAT=key_here
-```
 
 Once the .env files have the needed keys, you can build with one of the following commands
 ```
