@@ -345,12 +345,13 @@
             <h1 id="rainbow_header">Hello, {email}.</h1>
             
         </div>
-
+        <p>Hey there, awesome gifter! 🎉
+            I'm so pumped you're here! As you probably already know, the AO Labs team put together this app to help YOU become the ultimate gift-giving legend. Below, you can start setting up profiles for all the people you're picking out giftsfor. Go ahead and create as many profiles you need — no limits here! I personally recommend one for every special person in your life, but just between us, I may or may not have made a profile for myself too... 😏  After all, a litle self-love never hurt anyone, right? So, dive oin and have a blast creating the perfect gifts for everyone (and maybe a little something for you too)! Happy gifting! 🎁 </p>
         <div id="create_agent_page">
-            <h1 id="grey_small_header">Create a new agent</h1>
+            <h1 id="grey_small_header">Create a new profile</h1>
 
             
-            <label>Who are you looking to buy something for? <input placeholder="Agent Name" type="text" bind:value={newAgentName}></label>
+            <label>Who are you looking to buy something for? <input placeholder="Name" type="text" bind:value={newAgentName}></label>
 
             <label>Where do they live?:
                 <select bind:value={selectedCountry}>
@@ -371,7 +372,8 @@
             <label>Now get creative, if you were to introduce me, what would you say?: <input type="text" bind:value={extraInfo} /></label>
 
             <button id="main_button" on:click={() => { createNewAgent(); }}>Create</button>
-            <h1 id="grey_small_header">Or Continue Where You Left Off</h1>
+            <h1 id="grey_small_header">Saved profiles</h1>
+            <p>All the profiles that you've created will be stored here. Don't worry! You can also make me forget some going inside each profile and click on 'Delete Profile'.</p>
         </div>
 
 
@@ -415,7 +417,7 @@
         <button on:click={() => { 
             showrecommendationPage=false;
             deleteAgent();
-        }}>Delete Agent</button>
+        }}>Delete Profile</button>
         <h1>Finding the perfect gift for: {agentInUse[1]}</h1>
         <h4>What's the budget?</h4>
         <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
