@@ -18,9 +18,9 @@
     let gender = [];
     let budget = 50;
     let giftCategories = [];
-    let recommendedProduct = null;
     let recommendationScore = null;
     let product = null;
+    let NextProduct = null;
     let genre = null;
     let target = null;
     let occasion = null;
@@ -54,6 +54,7 @@
     }
 
     async function findGifts() {
+        console.log("getting gift cats")
         let data_to_send = {
             agentInUse: agentInUse,
             budget: budget,
@@ -67,45 +68,46 @@
         });
         const data = await response.json();
         giftCategories = data.categories;
+        console.log("finished")
     }
 
-    async function getRecommendation() {
-        findGifts();
-        console.log("Stop button clicked: ",stopButtonClicked)
-        isLoading = true;
-
-        const searchTerm =
-            giftCategories[Math.floor(Math.random() * giftCategories.length)];
-        const productResponse = await fetch(`${baseEndpoint}/get-product`, {
+    async function getProductfromGift() {
+        console.log("start get product")
+        const searchTerm = giftCategories[Math.floor(Math.random() * giftCategories.length)];
+        const productResponse = await fetch(`${baseEndpoint}/get_product`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: searchTerm, budget, agentInUse }),
         });
-        product = await productResponse.json();
-        recommendedProduct = product;
-        console.log("", recommendedProduct);
+        NextProduct = await productResponse.json();
+        console.log("finished to get product", NextProduct)
+    }
 
-        const data = { product, agentInUse };
-        console.log("calling agent recommend");
+
+    async function getRecommendation() {
+        product = NextProduct
+        isLoading = true;
+        console.log("using product: ", product)
+        const data = {product, agentInUse };
         const agentResponse = await fetch(`${baseEndpoint}/agent-recommend`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        isLoading = false;
+        
         const agentData = await agentResponse.json();
         console.log("agentdata:", agentData);
         recommendationScore = agentData.recommendation_score;
         target = agentData.target;
         genre = agentData.genre;
-        link = recommendedProduct.link;
-        if (agentData.recommendation_score < recommendation_threshold) {
-            console.log(
-                "Recommendation score is less than threshold, getting another recommendation",
-            );
+        link = product.link;
+        if (agentData.recommendation_score <recommendation_threshold) { 
+            console.log("Recommendation score is less than threshold, getting another recommendation");
             recommendation_threshold -= 20; // bring down threshold
             if (!stopButtonClicked) {
+                getProductfromGift();
                 getRecommendation();
+
                 stopButtonClicked = false
             }
             number_of_products_skipped += 1;
@@ -114,10 +116,15 @@
                 "Recommendation score is greater than threshold, showing recommendation",
             );
             recommendation_threshold = 50; // reset threshold
+            number_of_products_skipped = 0 
+
         }
+        isLoading = false;
         console.log("Number of products skipped: ", number_of_products_skipped);
         console.log("Recommendation threshold: ", recommendation_threshold);
-    }
+        findGifts();    // load the next gift categories 
+        getProductfromGift();
+}
 
     async function trainAgentPos() {
         const Label = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
@@ -190,7 +197,6 @@
         });
         const res = await response.json();
         isLoading = false;
-        console.log(res);
         agents = res;
     }
 
@@ -202,7 +208,7 @@
             body: JSON.stringify(data),
         });
         const res = await response.json();
-        console.log(res);
+
         getProduct();
     }
 
@@ -214,13 +220,11 @@
             body: JSON.stringify(data),
         });
         const res = await response.json();
-        console.log(res);
 
         savedProducts = res["products"];
     }
 
     async function check_login()  {
-        console.log("checking login")
         const params = new URLSearchParams(window.location.search);
         token = params.get("token")
 
@@ -263,7 +267,6 @@
 
     function updateAgentInUse(email, name) {
         agentInUse = [email, name];
-        console.log("Agent is use: ", agentInUse);
     }
 
     const createAccount = async () => {
@@ -344,6 +347,7 @@
                 >Create New Account</button
             >
             <p>{message}</p>
+            <p id="explainer_text">Buying a gift for someone you love can be tough - you want it to be perfect, sparking joy and positive vibes. But let's be real: over 50% of Americans stress out during the process, wasting two or three 30-minute sessions on gifts that still don't hit the mark. That's where our Shopping Companion comes in! It'll make gift-giving a breeze, slashing the time and effort by 10x, and guaranteeing the perfect gift every time.</p>
         </div>
     {/if}
     {#if loggedin}
@@ -371,12 +375,13 @@
         <div id="header_text">
             <h1 id="rainbow_header">Hello, {email}.</h1>
         </div>
-
+        <p>Hey there, awesome gifter! 🎉
+            I'm so pumped you're here! As you probably already know, the AO Labs team put together this app to help YOU become the ultimate gift-giving legend. Below, you can start setting up profiles for all the people you're picking out giftsfor. Go ahead and create as many profiles you need — no limits here! I personally recommend one for every special person in your life, but just between us, I may or may not have made a profile for myself too... 😏  After all, a litle self-love never hurt anyone, right? So, dive oin and have a blast creating the perfect gifts for everyone (and maybe a little something for you too)! Happy gifting! 🎁 </p>
         <div id="create_agent_page">
-            <h1 id="grey_small_header">Create a new agent</h1>
+            <h1 id="grey_small_header">Create a new profile</h1>
 
             
-            <label>Who are you looking to buy something for? <input placeholder="Agent Name" type="text" bind:value={newAgentName}></label>
+            <label>Who are you looking to buy something for? <input placeholder="Name" type="text" bind:value={newAgentName}></label>
 
             <label>Where do they live?:
                 <select bind:value={selectedCountry}>
@@ -398,13 +403,9 @@
             </label>
             <label>Now get creative, if you were to introduce me, what would you say?: <input type="text" bind:value={extraInfo} /></label>
 
-            <button
-                id="main_button"
-                on:click={() => {
-                    createNewAgent();
-                }}>Create</button
-            >
-            <h1 id="grey_small_header">Or Continue Where You Left Off</h1>
+            <button id="main_button" on:click={() => { createNewAgent(); }}>Create</button>
+            <h1 id="grey_small_header">Saved profiles</h1>
+            <p>All the profiles that you've created will be stored here. Don't worry! You can also make me forget some going inside each profile and click on 'Delete Profile'.</p>
         </div>
     {/if}
     {#if agents.length > 0 && !createNewAgentPage && !showrecommendationPage && loggedin}
@@ -418,14 +419,18 @@
                     />
                     <h1>{agent.name}</h1>
                     <p>{agent.age}, {agent.gender}, {agent.country}</p>
-                    <button
-                        on:click={() => {
-                            showrecommendationPage = true;
-                            updateAgentInUse(agent.email, agent.name);
-                            getProduct();
-                            getRecommendation();
-                        }}>Select</button
-                    >
+                    <button on:click={async () => { 
+                        showrecommendationPage = true;
+                        isLoading = true
+                        await updateAgentInUse(agent.email, agent.name);   // Update agent in use
+                        await getProduct();   // Find saved products
+                        await findGifts();    // Find gift search terms
+                        await getProductfromGift();   // Get random gift
+                        await getRecommendation();    // Get agent recommendations
+                        isLoading = false
+                    }}>
+                        Select
+                    </button>
                 </div>
             {/each}
         </div>
@@ -441,7 +446,7 @@
         <button on:click={() => { 
             showrecommendationPage=false;
             deleteAgent();
-        }}>Delete Agent</button>
+        }}>Delete Profile</button>
         <h1>Finding the perfect gift for: {agentInUse[1]}</h1>
         <h4>What's the budget?</h4>
         <input type="range" min="10" max="1000" step="5" bind:value="{budget}"/>
@@ -461,25 +466,23 @@
         {#if isLoading}
             <div class="spinner-container">
                 {#if isLoading&&showrecommendationPage}
+                    <p> We're looking for the perfect gift!</p>
                     <button id="main_button" on:click={() =>  {
                         stopButtonClicked = true
                     }
-                        }>Stop</button>
+                        }>I like this gift</button>
                 {/if}
 
                 <div class="spinner"></div>
             </div>
         {/if}
 
-        {#if recommendedProduct && showrecommendationPage}
+        {#if product&&showrecommendationPage}
+        
             <h2>Recommended Product</h2>
-            <img
-                src={recommendedProduct.photo}
-                alt={recommendedProduct.name}
-                id="recommend_product_img"
-            />
-            <p>Name: {recommendedProduct.name}</p>
-            <p>Price: {recommendedProduct.price}</p>
+            <img src={product.photo} alt={product.name} id="recommend_product_img" />
+            <p>Name: {product.name}</p>
+            <p>Price: {product.price}</p>
 
             <a id="buy_now_link" href={link} target="_blank">Buy Now </a>
             <button id="save_button" on:click={saveProduct} >Save for later</button>
