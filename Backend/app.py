@@ -29,7 +29,11 @@ import requests
 import time
 
 endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-frontend_url = "https://giftrec.aolabs.ai"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
+# endpoint = "http://127.0.0.1:5000"
+# endpoint = "https://aolabsgiftrec-backend-equal-strawberry-s3o2.zeet-aolabsai-hc.zeet.app"
+# frontend_url = "https://gift-recsys-main.onrender.com"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
+# frontend_url = "http://localhost:5173"
+frontend_url = "https://giftrec.aolabs.ai"
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
@@ -742,4 +746,4 @@ def home():
 
 if __name__ == '__main__':
 
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

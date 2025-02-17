@@ -6,6 +6,11 @@
 
       
     const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    // const baseEndpoint = "http://127.0.0.1:5000";
+    // const baseEndpoint = "https://aolabsgiftrec-backend-equal-strawberry-s3o2.zeet-aolabsai-hc.zeet.app";
+
+    // will be used for changing url for development and production without manually changing the url
+    // const baseEndpoint = import.meta.env.VITE_BACKEND_URL;
 
     let countries = [];
     let selectedCountry = "US";
@@ -27,9 +32,9 @@
     let newAgentName = "";
 
     let loggedin = false;
-    
+
     let password = "";
-    let message = '';
+    let message = "";
     let isLoading = false;
     let showrecommendationPage = false;
     let agents = [];
@@ -44,17 +49,17 @@
     let stopButtonClicked = false;
 
     async function fetchCountries() {
-        const response = await fetch('/google-countries.json');
+        const response = await fetch("/google-countries.json");
         countries = await response.json();
     }
 
     async function findGifts() {
         console.log("getting gift cats")
         let data_to_send = {
-            "agentInUse": agentInUse,
-            "budget": budget,
-            "occasion": occasion,
-            "season": season
+            agentInUse: agentInUse,
+            budget: budget,
+            occasion: occasion,
+            season: season,
         };
         const response = await fetch(`${baseEndpoint}/get-gift-categories`, {
             method: "POST",
@@ -106,9 +111,10 @@
                 stopButtonClicked = false
             }
             number_of_products_skipped += 1;
-        }
-        else {
-            console.log("Recommendation score is greater than threshold, showing recommendation");
+        } else {
+            console.log(
+                "Recommendation score is greater than threshold, showing recommendation",
+            );
             recommendation_threshold = 50; // reset threshold
             number_of_products_skipped = 0 
 
@@ -148,7 +154,14 @@
 
     async function createNewAgent() {
         console.log(selectedCountry);
-        const data = { email, newAgentName, selectedCountry, age, gender, extraInfo };
+        const data = {
+            email,
+            newAgentName,
+            selectedCountry,
+            age,
+            gender,
+            extraInfo,
+        };
 
         const response = await fetch(`${baseEndpoint}/createNewAgent`, {
             method: "POST",
@@ -174,7 +187,7 @@
     }
 
     async function getAgents() {
-        console.log("email: ", email)
+        console.log("email: ", email);
         const data = { email };
         isLoading = true;
         const response = await fetch(`${baseEndpoint}/getAgents`, {
@@ -304,46 +317,63 @@
     onMount(fetchCountries);
 </script>
 
-
-
 <main>
-
-
     {#if !loggedin}
-    <div id="login">
-        <img id="start_page_img" alt="start_page_img" src="https://s3-alpha-sig.figma.com/img/6be8/76b1/a59b0193952b1c07665ec0ef5458555a?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=a~WBMZovxZB0Sc1UUxuNdTn3sjklDGreg043~LKVo-9y17PIz2N~wrHeQX0jIBPb7988ebJ8ANk6ZWpuqYYEMiUkBTjdmakVRSF6AoyHykjyVjX0kx38VMZAu-2QFkvAX4G5IKOGagnC~pXKnfsdCp9JBxoANEb2mZE5Cut8aelKu~Y8ojo2l9uC4FEl3TdMjfBXy4qEYg5fWdRZ1ZHWYLcvo1-WYJCmmvBZsjjQ9xtO11zKl-euHxuXrKh2ugla2OsrbLmuvOneizuJv7g1lQdNcGlTIdx6Z9uuh9hTiXLptTNbuxg27IUDQi4OXn8L8EjkoslCmdN7pB8dSmIE7w__">
+        <div id="login">
+            <img
+                id="start_page_img"
+                alt="start_page_img"
+                src="start_page_img.jpg"
+            />
             <h1 id="rainbow_header">Delightful gift giving starts here</h1>
             <button on:click={loginWithGoogle}>Sign in with Google</button>
             <p>----or----</p>
-            <label>Email: <input type="email" bind:value={email}></label>
-            <label>Password: <input type="password" bind:value={password}></label>
-            <button id="main_button" on:click={() => { login(); getAgents(); }}>Continue</button>
+            <label>Email: <input type="email" bind:value={email} /></label>
+            <label
+                >Password: <input
+                    type="password"
+                    bind:value={password}
+                /></label
+            >
+            <button
+                id="main_button"
+                on:click={() => {
+                    login();
+                    getAgents();
+                }}>Continue</button
+            >
             <p>----or----</p>
-            <button id="main_button" on:click={createAccount}>Create New Account</button>
+            <button id="main_button" on:click={createAccount}
+                >Create New Account</button
+            >
             <p>{message}</p>
             <p id="explainer_text">Buying a gift for someone you love can be tough - you want it to be perfect, sparking joy and positive vibes. But let's be real: over 50% of Americans stress out during the process, wasting two or three 30-minute sessions on gifts that still don't hit the mark. That's where our Shopping Companion comes in! It'll make gift-giving a breeze, slashing the time and effort by 10x, and guaranteeing the perfect gift every time.</p>
         </div>
-
     {/if}
     {#if loggedin}
         <div id="nav">
-            <button id="nav_button" on:click={() => { 
-                showrecommendationPage = false;
-                createNewAgentPage = false;
-                getAgents();
-            }}>Home</button>
-            <button id="nav_button" on:click={() => { 
-                loggedin = false;
-                email = "";
-                password = "";
-                message = "";
-            }}>Logout</button>
+            <button
+                id="nav_button"
+                on:click={() => {
+                    showrecommendationPage = false;
+                    createNewAgentPage = false;
+                    getAgents();
+                }}>Home</button
+            >
+            <button
+                id="nav_button"
+                on:click={() => {
+                    loggedin = false;
+                    email = "";
+                    password = "";
+                    message = "";
+                }}>Logout</button
+            >
         </div>
     {/if}
     {#if loggedin && !showrecommendationPage && !createNewAgentPage}
         <div id="header_text">
             <h1 id="rainbow_header">Hello, {email}.</h1>
-            
         </div>
         <p>Hey there, awesome gifter! 🎉
             I'm so pumped you're here! As you probably already know, the AO Labs team put together this app to help YOU become the ultimate gift-giving legend. Below, you can start setting up profiles for all the people you're picking out giftsfor. Go ahead and create as many profiles you need — no limits here! I personally recommend one for every special person in your life, but just between us, I may or may not have made a profile for myself too... 😏  After all, a litle self-love never hurt anyone, right? So, dive oin and have a blast creating the perfect gifts for everyone (and maybe a little something for you too)! Happy gifting! 🎁 </p>
@@ -356,7 +386,9 @@
             <label>Where do they live?:
                 <select bind:value={selectedCountry}>
                     {#each countries as country}
-                        <option value={country.country_code}>{country.country_name}</option>
+                        <option value={country.country_code}
+                            >{country.country_name}</option
+                        >
                     {/each}
                 </select>
             </label>
@@ -375,16 +407,16 @@
             <h1 id="grey_small_header">Saved profiles</h1>
             <p>All the profiles that you've created will be stored here. Don't worry! You can also make me forget some going inside each profile and click on 'Delete Profile'.</p>
         </div>
-
-
     {/if}
-    {#if (agents.length > 0) && !createNewAgentPage && !showrecommendationPage && loggedin}
-        
+    {#if agents.length > 0 && !createNewAgentPage && !showrecommendationPage && loggedin}
         <div class="agent-list">
-            
             {#each agents as agent}
                 <div class="select_agents">
-                    <img id="agent_img" alt="agent_img" src="https://s3-alpha-sig.figma.com/img/b6cf/c50b/674d6137a02d8c5b27b14be520e715b4?Expires=1739145600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=PAK5hDpRsD4q1U4b~~qyMS3ktrCt6fhjl6HDWuK6ZqDfsvniATLDs0JseBmUNNX9u2yAHxL8HZxvm~BHVIoRxAI4Bf8GLEnyMKY~w~O6wSBiiFqlRAew8u2irOJ5e-v8aI6ki4m5Pv48Wo0bCAxRjYMDlRt5O60k7V1LC5B1kwga3Vh~H5yC2-Ei4MVnSv3ULJoVe8-WV~X3zhTbGouGJd4023FxB~-K28h9t14ItPywTipFkN~9X45t9cZ7ACMHcWs~iyCHW7gx46FQZvH~YUUH8eHDttf0HLHiTm3-DFS3fzP63Mt8yaXcE-or4825ztRr2QAXAmTky1tpO41WZg__">
+                    <img
+                        id="agent_img"
+                        alt="agent_img"
+                        src="agent_img.jpeg"
+                    />
                     <h1>{agent.name}</h1>
                     <p>{agent.age}, {agent.gender}, {agent.country}</p>
                     <button on:click={async () => { 
@@ -407,11 +439,8 @@
 
     {/if}-->
 
-    <div id="recommendation_page"> 
-        <div id="recommendation_page_left">
-            
-
-        </div>
+    <div id="recommendation_page">
+        <div id="recommendation_page_left"></div>
         {#if showrecommendationPage && loggedin}
 
         <button on:click={() => { 
@@ -465,21 +494,20 @@
         
         {/if}
 
-        {#if showrecommendationPage&&loggedin}
+        {#if showrecommendationPage && loggedin}
             <h1>Your saved products</h1>
-            
+
             <div id="savedProducts">
                 {#each savedProducts as product}
                     <div class="savedProduct">
                         <p>{product.name}</p>
-                        <a id="buy_now_link" href={product.link} target="_blank">Buy Now </a>
-                        <div id="divider_between_saved_products">
-                        </div>
-
+                        <a id="buy_now_link" href={product.link} target="_blank"
+                            >Buy Now
+                        </a>
+                        <div id="divider_between_saved_products"></div>
                     </div>
                 {/each}
             </div>
         {/if}
     </div>
- 
 </main>
