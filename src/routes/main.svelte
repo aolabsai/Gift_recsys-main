@@ -105,9 +105,13 @@
             console.log("Recommendation score is less than threshold, getting another recommendation");
             recommendation_threshold -= 20; // bring down threshold
             if (!stopButtonClicked) {
+                findGifts();
                 getProductfromGift();
-                getRecommendation();
+                product = NextProduct
+                await getRecommendation();
 
+                
+            }else{
                 stopButtonClicked = false
             }
             number_of_products_skipped += 1;
@@ -119,6 +123,7 @@
             number_of_products_skipped = 0 
 
         }
+        console.log("ended")
         isLoading = false;
         console.log("Number of products skipped: ", number_of_products_skipped);
         console.log("Recommendation threshold: ", recommendation_threshold);
