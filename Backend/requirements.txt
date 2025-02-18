@@ -16,7 +16,7 @@ requests
 gunicorn
 
 git+https://github.com/Rafipilot/embedding_bucketing
-
+git+https://github.com/aolabsai/ao_python
 git+https://github.com/aolabsai/ao_arch
 
 

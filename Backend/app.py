@@ -14,6 +14,8 @@ import numpy as np
 import http.client
 from urllib.parse import quote
 
+import ao_python.ao_python as ao
+
 from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
 
@@ -28,8 +30,8 @@ import os
 import requests
 import time
 
-endpoint = "http://127.0.0.1:5000"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-frontend_url = "http://localhost:5173"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
+endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
+frontend_url = "https://giftrec.aolabs.ai"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
 
 
 app = Flask(__name__)
@@ -123,26 +125,12 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     email = email.lower()
     uid = email+name_of_agent
     print("training agent with uid", uid)
-    payload = {
-    "kennel_id": kennel_id, 
-    "agent_id": uid,   
-    "INPUT": Input,  
+    Agent = ao.Agent(uid, kennel_id, api_key = aolabs_key)
 
-    "LABEL": Label,
-    "control": {
-        "US": True,
-        "states": 1,
-    }
-}
 
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "X-API-KEY": f"{aolabs_key}"
-    }
-
-    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
-    print("Agent response: ", response.json())
+    response = Agent.next_state(Input, Label, Unsequenced=True)
+    Agent.reset_state()
+    print("Agent response: ", response)
 
 
 def agentDelete(email, name_of_agent):
@@ -168,25 +156,11 @@ def agentResponse(Input, email, name_of_agent):
     uid = email+name_of_agent
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
-    payload = {
-    "kennel_id": kennel_id, 
-    "agent_id": uid,  
-    "INPUT": Input,  
-
-    "control": {
-        "US": True,
-        "states": 1,
-    }
-}
-
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "X-API-KEY": f"{aolabs_key}"
-    }
-
-    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
-    return stringTolist(response.json()["story"])
+    Agent = ao.Agent(uid, kennel_id, api_key = aolabs_key)
+    print("made agent")
+    response = Agent.next_state(Input)
+    print("next state response: ", response)
+    return stringTolist(response["story"])
 
 @app.route("/login_with_google", methods=['POST'])
 def login_with_google():
