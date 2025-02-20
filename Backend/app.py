@@ -28,9 +28,10 @@ import os
 import requests
 import time
 
-endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
+# endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
 # endpoint = "http://127.0.0.1:5000"
 # endpoint = "https://aolabsgiftrec-backend-equal-strawberry-s3o2.zeet-aolabsai-hc.zeet.app"
+endpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"
 # frontend_url = "https://gift-recsys-main.onrender.com"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
 # frontend_url = "http://localhost:5173"
 frontend_url = "https://giftrec.aolabs.ai"

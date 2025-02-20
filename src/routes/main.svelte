@@ -4,8 +4,9 @@
     import { onMount } from "svelte";
 
 
-      
-    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    // const baseEndpoint = "https://gift-recsys.onrender.com"
+    const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"
+    // const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app/"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
     // const baseEndpoint = "http://127.0.0.1:5000";
     // const baseEndpoint = "https://aolabsgiftrec-backend-equal-strawberry-s3o2.zeet-aolabsai-hc.zeet.app";
 
