@@ -333,7 +333,7 @@
             <img
                 id="start_page_img"
                 alt="start_page_img"
-                src="start_page_img.jpeg"
+                src="start_page_img.png"
             />
             <button on:click={loginWithGoogle}>Sign in with Google</button>
             <p>----or----</p>
