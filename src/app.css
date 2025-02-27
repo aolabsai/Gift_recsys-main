@@ -3,10 +3,9 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f8f9fa;
   color: #333;
   line-height: 1.6;
-  background: linear-gradient(to bottom, #ffd0c5, #ffffff);
+  background: linear-gradient(to bottom, #8b49c9, #990ac5);
   
 }
 
@@ -154,6 +153,7 @@ main {
 
 #main_button {
   width: 50%;
+  border-radius: 5%;
 }
 
 #start_page_img {
@@ -178,11 +178,12 @@ main {
 }
 
 h1, h2 {
-  color: #007bff;
+  color: #ffffff;
   text-align: center;
 }
 
 label {
+  color: #ffffff;
   display: block;
   margin: 1rem 0 0.5rem;
   font-weight: bold;
@@ -195,6 +196,7 @@ input[type="email"], input[type="text"], input[type="number"], input[type="passw
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+
 }
 
 input[type="range"] {
@@ -256,6 +258,7 @@ img {
 
 p {
   margin: 0.5rem 0;
+  color: white;
 }
 
 span {
