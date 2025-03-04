@@ -106,9 +106,13 @@
             console.log("Recommendation score is less than threshold, getting another recommendation");
             recommendation_threshold -= 20; // bring down threshold
             if (!stopButtonClicked) {
+                findGifts();
                 getProductfromGift();
-                getRecommendation();
+                product = NextProduct
+                await getRecommendation();
 
+                
+            }else{
                 stopButtonClicked = false
             }
             number_of_products_skipped += 1;
@@ -120,6 +124,7 @@
             number_of_products_skipped = 0 
 
         }
+        console.log("ended")
         isLoading = false;
         console.log("Number of products skipped: ", number_of_products_skipped);
         console.log("Recommendation threshold: ", recommendation_threshold);
@@ -321,21 +326,21 @@
 <main>
     {#if !loggedin}
         <div id="login">
+
+            <h1 id="top">Effortless Gift Shopping</h1>
+            <h1 id="header">Find the perfect gift in less than five clicks</h1>
+            <p id="subheader">AI-powered shopping companion for
+                efficient, stress-free gift shopping.</p>
             <img
                 id="start_page_img"
                 alt="start_page_img"
-                src="start_page_img.jpg"
+                src="start_page_img.png"
             />
-            <h1 id="rainbow_header">Delightful gift giving starts here</h1>
             <button on:click={loginWithGoogle}>Sign in with Google</button>
             <p>----or----</p>
-            <label>Email: <input type="email" bind:value={email} /></label>
-            <label
-                >Password: <input
-                    type="password"
-                    bind:value={password}
-                /></label
-            >
+            <input type="email" bind:value={email} placeholder="Email" />
+            <input type="password" bind:value={password} placeholder="Password"/>
+
             <button
                 id="main_button"
                 on:click={() => {
@@ -348,7 +353,7 @@
                 >Create New Account</button
             >
             <p>{message}</p>
-            <p id="explainer_text">Buying a gift for someone you love can be tough - you want it to be perfect, sparking joy and positive vibes. But let's be real: over 50% of Americans stress out during the process, wasting two or three 30-minute sessions on gifts that still don't hit the mark. That's where our Shopping Companion comes in! It'll make gift-giving a breeze, slashing the time and effort by 10x, and guaranteeing the perfect gift every time.</p>
+           
         </div>
     {/if}
     {#if loggedin}

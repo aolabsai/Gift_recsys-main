@@ -14,6 +14,8 @@ import numpy as np
 import http.client
 from urllib.parse import quote
 
+import ao_python.ao_python as ao
+
 from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
 
@@ -129,26 +131,12 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     email = email.lower()
     uid = email+name_of_agent
     print("training agent with uid", uid)
-    payload = {
-    "kennel_id": kennel_id, 
-    "agent_id": uid,   
-    "INPUT": Input,  
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid)
 
-    "LABEL": Label,
-    "control": {
-        "US": True,
-        "states": 1,
-    }
-}
 
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "X-API-KEY": f"{aolabs_key}"
-    }
-
-    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
-    print("Agent response: ", response.json())
+    response = Agent.next_state(Input, Label, Unsequenced=True)
+    Agent.reset_state()
+    print("Agent response: ", response)
 
 
 def agentDelete(email, name_of_agent):
@@ -174,25 +162,11 @@ def agentResponse(Input, email, name_of_agent):
     uid = email+name_of_agent
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
-    payload = {
-    "kennel_id": kennel_id, 
-    "agent_id": uid,  
-    "INPUT": Input,  
-
-    "control": {
-        "US": True,
-        "states": 1,
-    }
-}
-
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "X-API-KEY": f"{aolabs_key}"
-    }
-
-    response = requests.post(ao_endpoint_url, json=payload, headers=headers)
-    return stringTolist(response.json()["story"])
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid)
+    print("made agent")
+    response = Agent.next_state(Input)
+    print("next state response: ", response)
+    return stringTolist(response["story"])
 
 @app.route("/login_with_google", methods=['POST'])
 def login_with_google():
