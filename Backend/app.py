@@ -125,7 +125,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     email = email.lower()
     uid = email+name_of_agent
     print("training agent with uid", uid)
-    Agent = ao.Agent(uid, kennel_id, api_key = aolabs_key)
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid)
 
 
     response = Agent.next_state(Input, Label, Unsequenced=True)
@@ -156,7 +156,7 @@ def agentResponse(Input, email, name_of_agent):
     uid = email+name_of_agent
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
-    Agent = ao.Agent(uid, kennel_id, api_key = aolabs_key)
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid)
     print("made agent")
     response = Agent.next_state(Input)
     print("next state response: ", response)
