@@ -5,9 +5,9 @@
 
 
       
-    const baseEndpoint = "https://gift-recsys.onrender.com"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
+    const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
     // const baseEndpoint = "http://127.0.0.1:5000";
-    // const baseEndpoint = "https://aolabsgiftrec-backend-equal-strawberry-s3o2.zeet-aolabsai-hc.zeet.app";
+    // const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app";
 
     // will be used for changing url for development and production without manually changing the url
     // const baseEndpoint = import.meta.env.VITE_BACKEND_URL;
@@ -335,7 +335,8 @@
                 alt="start_page_img"
                 src="start_page_img.png"
             />
-            <button on:click={loginWithGoogle}>Sign in with Google</button>
+            
+            <img id="google-button" src="public/google-button.png" alt="Sign in with Google" on:click={loginWithGoogle} style="cursor: pointer;">
             <p>----or----</p>
             <input type="email" bind:value={email} placeholder="Email" />
             <input type="password" bind:value={password} placeholder="Password"/>
