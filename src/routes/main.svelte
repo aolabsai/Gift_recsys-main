@@ -4,7 +4,7 @@
     import { onMount } from "svelte";
 
 
-      
+
     const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
     // const baseEndpoint = "http://127.0.0.1:5000";
     // const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app";
@@ -336,7 +336,7 @@
                 src="start_page_img.png"
             />
             
-            <img id="google-button" src="public/google-button.png" alt="Sign in with Google" on:click={loginWithGoogle} style="cursor: pointer;">
+            <img id="google-button" src="google-button.png" alt="Sign in with Google" on:click={loginWithGoogle} style="cursor: pointer;">
             <p>----or----</p>
             <input type="email" bind:value={email} placeholder="Email" />
             <input type="password" bind:value={password} placeholder="Password"/>
