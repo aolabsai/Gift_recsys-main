@@ -1,6 +1,12 @@
 # Use an official Node.js runtime as a parent image
 FROM node:23 AS build_image
 
+
+# reference on build args/environment variables in docker + vite
+# https://stackoverflow.com/questions/77486735/docker-with-vite-env-variables-are-undefined-inside-the-docker-container/77490465#77490465
+ARG VITE_BACKEND_URL
+
+
 # Set the working directory in the container
 WORKDIR /app
 
