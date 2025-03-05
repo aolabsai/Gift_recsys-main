@@ -270,6 +270,14 @@ p {
   color: white;
 }
 
+#agent-name {
+  color: black;
+}
+
+#agent-info   {
+  color: black;
+}
+
 span {
   font-weight: bold;
 }

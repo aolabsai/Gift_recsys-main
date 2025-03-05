@@ -423,8 +423,8 @@
                         alt="agent_img"
                         src="agent_img.jpeg"
                     />
-                    <h1>{agent.name}</h1>
-                    <p>{agent.age}, {agent.gender}, {agent.country}</p>
+                    <h1 id="agent-name">{agent.name}</h1>
+                    <p id="agent-info">{agent.age}, {agent.gender}, {agent.country}</p>
                     <button on:click={async () => { 
                         showrecommendationPage = true;
                         isLoading = true
