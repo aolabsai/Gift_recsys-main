@@ -36,6 +36,10 @@ main {
   h1 {
     font-size: 1rem;
   }
+  #google-button  {
+    max-width: 50%;
+  }
+  
   p {
     font-size: 0.8rem;
   }
@@ -43,6 +47,7 @@ main {
     font-size: 0.6rem;
   }
 }
+
 
 
 #banner {
@@ -248,6 +253,10 @@ button:hover {
   background-color: #218838;
 }
 
+#google-button  {
+  max-width: 10rem;
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -259,6 +268,14 @@ img {
 p {
   margin: 0.5rem 0;
   color: white;
+}
+
+#agent-name {
+  color: black;
+}
+
+#agent-info   {
+  color: black;
 }
 
 span {
