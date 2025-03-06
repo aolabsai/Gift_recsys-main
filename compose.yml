@@ -1,4 +1,4 @@
-#compose will mostly be for development and testing. deployment will be automated through github actions
+#compose will mostly be for development and testing. deployment will be somewhat automated through github actions
 services:
   backend:
     build:
