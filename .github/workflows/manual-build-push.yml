@@ -30,7 +30,7 @@ jobs:
       with:
         # List of build-time variables
         build-args: 
-          VITE_BACKEND_URL="https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"
+          VITE_BACKEND_URL=https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app
         # Build's context is the set of files located in the specified PATH or URL
         context: .
         # List of target platforms for build
