@@ -30,16 +30,18 @@ import os
 import requests
 import time
 
-endpoint = "https://gift-recsys.onrender.com"  # change to https://gift-recsys.onrender.com for prod and http://127.0.0.1:5000 for local 
-frontend_url = "https://giftrec.aolabs.ai"   #change to http://localhost:5174 for local and  https://giftrec.aolabs.ai for prod
 
+#only needed when running locally, docker image should work without it
+# load_dotenv()
+
+endpoint = os.getenv("VITE_BACKEND_URL")
+frontend_url = os.getenv("FRONTEND_URL")
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
 CORS(app)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-load_dotenv()
 
 ao_endpoint_url = "https://api.aolabs.ai/v0dev/kennel/agent"
 

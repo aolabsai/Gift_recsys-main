@@ -1,6 +1,21 @@
 # Base image with Python
 FROM python:3.10-slim
 
+# TODO: pass keys securely to the dockerfile and load them 
+# Options:
+# - load at runtime
+# - mount file in a volume
+# TODO: dockerignore .env and any other secrets
+# TODO: should urls be stored in the same environment variables as secrets?
+# - it would make things simpler
+# TODO: add filetypes to caches
+
+
+# NOTE:
+# - Could specify mounted file in compose.yml for running locally and mount a different file on zeet
+# - zeet has options for additional arguments when running an image, environment variables, and persistent volumes
+# - didn't see where a file would be added to a persistent volume
+# - text from zeet "Environment variables are accessible at runtime and at build time! Use this to securely pass secrets or other runtime configuration."
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1

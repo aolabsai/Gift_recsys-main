@@ -1,0 +1,54 @@
+name: Build and push images to dockerhub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_images:
+    name: build images
+    runs-on: ubuntu-latest
+    env:
+      BACKEND_URL: "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: 'production' # Use the production branch
+  
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{secrets.DOCKERHUB_USERNAME}}
+        password: ${{secrets.DOCKERHUB_TOKEN}}
+
+    - name: Build and push frontend image
+    # equivalent to:
+    # docker build --build-arg VITE_BACKEND_URL=https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app --platform linux/amd64 -t aolabs/giftrec-frontend .   
+    # You may pin to the exact commit or the version.
+    # uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+      uses: docker/build-push-action@v6.15.0
+      with:
+        # List of build-time variables
+        build-args: 
+          VITE_BACKEND_URL="https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"
+        # Build's context is the set of files located in the specified PATH or URL
+        context: .
+        # List of target platforms for build
+        platforms: linux/amd64
+        # Push is a shorthand for --output=type=registry
+        push: true
+        # List of tags
+        tags: aolabs/giftrec-frontend:latest
+    - name: Build and push backend image
+    # You may pin to the exact commit or the version.
+    # uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+      uses: docker/build-push-action@v6.15.0
+      with:
+        # Build's context is the set of files located in the specified PATH or URL
+        context: ./Backend
+        # List of target platforms for build
+        platforms: linux/amd64
+        # Push is a shorthand for --output=type=registry
+        push: true
+        # List of tags
+        tags: aolabs/giftrec-backend:latest
