@@ -4,13 +4,9 @@
     import { onMount } from "svelte";
 
 
-      
-    const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"; // Change to http://127.0.0.1:5000 for local testing and https://gift-recsys.onrender.com for production
-    // const baseEndpoint = "http://127.0.0.1:5000";
-    // const baseEndpoint = "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app";
 
-    // will be used for changing url for development and production without manually changing the url
-    // const baseEndpoint = import.meta.env.VITE_BACKEND_URL;
+    const baseEndpoint = import.meta.env.VITE_BACKEND_URL;
+
 
     let countries = [];
     let selectedCountry = "US";
@@ -329,7 +325,7 @@
             <h1 id="top">Effortless Gift Shopping</h1>
             <h1 id="header">Find the perfect gift in less than five clicks</h1>
             <p id="subheader">AI-powered shopping companion for
-                efficient, stress-free gift shoopping.</p>
+                efficient, stress-free gift shopping.</p>
             <img
                 id="start_page_img"
                 alt="start_page_img"

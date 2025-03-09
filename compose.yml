@@ -1,3 +1,4 @@
+#compose will mostly be for development and testing. deployment will be somewhat automated through github actions
 services:
   backend:
     build:
@@ -7,6 +8,9 @@ services:
         # - linux/arm64
     ports:
       - "5000:5000"
+    env_file:
+      # - ./Backend/.env
+      - .env
 
 
   frontend:
@@ -15,6 +19,8 @@ services:
       platforms:
         - linux/amd64
         # - linux/arm64
+      args:
+        VITE_BACKEND_URL: "http://localhost:5000"
     ports:
       - "5173:5173"
     depends_on:
