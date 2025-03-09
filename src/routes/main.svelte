@@ -336,7 +336,7 @@
                 src="start_page_img.png"
             />
             
-            <img id="google-button" src="public/google-button.png" alt="Sign in with Google" on:click={loginWithGoogle} style="cursor: pointer;">
+            <img id="google-button" src="google-button.png" alt="Sign in with Google" on:click={loginWithGoogle} style="cursor: pointer;">
             <p>----or----</p>
             <input type="email" bind:value={email} placeholder="Email" />
             <input type="password" bind:value={password} placeholder="Password"/>
