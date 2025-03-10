@@ -8,7 +8,7 @@ jobs:
     name: build images
     runs-on: ubuntu-latest
     env:
-      BACKEND_URL: "https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app"
+      BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
       with:
         # List of build-time variables
         build-args: 
-          VITE_BACKEND_URL=https://aolabsgiftrec-backend-cruel-kiwi-dj2g.aolabsai-east1.zeet.app
+          VITE_BACKEND_URL=${{ vars.VITE_BACKEND_URL }}
         # Build's context is the set of files located in the specified PATH or URL
         context: .
         # List of target platforms for build
