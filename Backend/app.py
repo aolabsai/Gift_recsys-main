@@ -43,7 +43,7 @@ CORS(app)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
-ao_endpoint_url = "https://api.aolabs.ai/v0dev/kennel/agent"
+ao_endpoint_url = "https://api.aolabs.ai/prod/kennel/agent"
 
 openai_key = os.getenv("OPENAI_KEY")
 rapid_key = os.getenv("RAPID_KEY")
@@ -127,7 +127,7 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     email = email.lower()
     uid = email+name_of_agent
     print("training agent with uid", uid)
-    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid, stage="dev")
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid, stage="prod")
 
 
     # response = Agent.next_state(Input, Label, Unsequenced=True)
@@ -160,7 +160,7 @@ def agentResponse(Input, email, name_of_agent):
     uid = email+name_of_agent
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
-    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid, stage="dev")
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid, stage="prod")
     print("made agent")
     response = Agent.next_state(Input, unsequenced=True)
     print("next state response: ", response)
