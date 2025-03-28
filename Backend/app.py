@@ -14,7 +14,7 @@ import numpy as np
 import http.client
 from urllib.parse import quote
 
-import ao_python.ao_python as ao
+import ao_pyth.ao_pyth as ao
 
 from dotenv import load_dotenv
 import embedding_bucketing.embedding_model_test as em
@@ -127,10 +127,12 @@ def trainAgentCall(Input, Label, email, name_of_agent):
     email = email.lower()
     uid = email+name_of_agent
     print("training agent with uid", uid)
-    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid)
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid, stage="dev")
 
 
-    response = Agent.next_state(Input, Label, Unsequenced=True)
+    # response = Agent.next_state(Input, Label, Unsequenced=True)
+    response = Agent.next_state(Input, Label)
+    print("Agent response: ", response)
     Agent.reset_state()
     print("Agent response: ", response)
 
@@ -158,11 +160,12 @@ def agentResponse(Input, email, name_of_agent):
     uid = email+name_of_agent
     Input = listTostring(Input)
     print("calling agent with uid: ", uid)
-    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid)
+    Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid, stage="dev")
     print("made agent")
     response = Agent.next_state(Input)
     print("next state response: ", response)
-    return stringTolist(response["story"])
+    # return stringTolist(response["story"])
+    return response
 
 @app.route("/login_with_google", methods=['POST'])
 def login_with_google():
@@ -357,7 +360,6 @@ def get_product():
     
 
 @app.route('/agent-recommend', methods=['POST'])
-
 def agent_recommend():
     conn = http.client.HTTPSConnection("real-time-amazon-data.p.rapidapi.com")
     headers = {
@@ -460,6 +462,7 @@ def agent_recommend():
 
 
     except Exception as e:
+        print(f"Error: {e}")
         return jsonify({"error": "Error during recommendation processing"}), 500
 
 
