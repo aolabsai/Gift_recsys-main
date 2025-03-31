@@ -16,7 +16,8 @@ requests
 gunicorn
 
 git+https://github.com/Rafipilot/embedding_bucketing
-git+https://github.com/aolabsai/ao_python
+# git+https://github.com/aolabsai/ao_pyth
+ao_pyth
 
 #is ao_arch needed?
 git+https://github.com/aolabsai/ao_arch
