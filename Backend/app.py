@@ -32,7 +32,7 @@ import time
 
 
 #only needed when running locally, docker image should work without it
-# load_dotenv()
+load_dotenv()
 
 endpoint = os.getenv("VITE_BACKEND_URL")
 frontend_url = os.getenv("FRONTEND_URL")
@@ -162,7 +162,7 @@ def agentResponse(Input, email, name_of_agent):
     print("calling agent with uid: ", uid)
     Agent = ao.Agent(api_key=aolabs_key, kennel_id=kennel_id, uid=uid, stage="dev")
     print("made agent")
-    response = Agent.next_state(Input)
+    response = Agent.next_state(Input, unsequenced=True)
     print("next state response: ", response)
     # return stringTolist(response["story"])
     return response
@@ -277,7 +277,7 @@ def get_gift_categories():
     gender = db.collection('Agents').document(agent_document_id).get().to_dict().get('country')
     country = db.collection('Agents').document(agent_document_id).get().to_dict().get('gender')#
     info_about_person = db.collection('Agents').document(agent_document_id).get().to_dict().get('extraInfo')
-    print(age, gender, country, info_about_person)
+
     prompt = f"What are some gift categories from amazon that meet the following: age: {age}, gender: {gender}, budget: {budget}, occassion: {occassion}, season: {season} extra info: {info_about_person}"
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -289,7 +289,7 @@ def get_gift_categories():
         temperature=0.1
     )
     gift_categories = response.choices[0].message.content.splitlines()
-    print("Gift cats: ",gift_categories) 
+
     return jsonify({"categories": gift_categories})
 
 @app.route('/get_product', methods=['POST'])
@@ -344,7 +344,6 @@ def get_product():
 
         random.shuffle(products)
         product = products[0]
-        print("name: ", product["product_title"])
         return jsonify({
             "asin": product["asin"],
             "name": product["product_title"],
@@ -366,9 +365,8 @@ def agent_recommend():
         'x-rapidapi-key': rapid_key,
         'x-rapidapi-host': "real-time-amazon-data.p.rapidapi.com"
     }
-    print("Received request to recommend")
     data = request.json
-    print("Data: ", data)
+
 
 
     try:
@@ -386,7 +384,6 @@ def agent_recommend():
         name_of_agent = agent_in_use[1]
 
         ep = f"/product-details?asin={asin}&country=US"
-        print("using asin: ", asin)
 
 
         max_retries = 3
@@ -437,7 +434,6 @@ def agent_recommend():
         )
 
         llm_output = em.llm_call(f"what category should this product be in: {product_name}")
-        print(f"LLM output: {llm_output}")
 
         cldis, genre, bucketid, genre_binary = em.auto_sort(
             cache, word=llm_output, max_distance=10, bucket_array=bucket,
@@ -445,8 +441,6 @@ def agent_recommend():
         )
 
         input_to_agent = np.concatenate([genre_binary, target_binary, np.array(category_binary)])
-
-        print(f"Input to agent: {input_to_agent}")
 
         # Get agent recommendation
         response = agentResponse(input_to_agent, email, name_of_agent)
@@ -470,7 +464,6 @@ def agent_recommend():
 def trainAgent():
     data = request.json
     Label = data["Label"]
-    print("training agent: ", Label)
     product_name = data.get("product_name", "")
     aiu = data["agentInUse"]
     email = aiu[0].lower()
@@ -496,11 +489,11 @@ def trainAgent():
 
     cldis_category, category, categoryid, category_binary = em.auto_sort(
         cache_categories, word=product_name, max_distance=10, bucket_array=bucket_categories,
-        type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=5
+        type_of_distance_calc="COSINE SIMILARITY", amount_of_binary_digits=10
     )
 
 
-    input_to_agent = np.concatenate([genre_binary, target_binary, category_binary])
+    input_to_agent = np.concatenate([genre_binary, target_binary, np.array(category_binary)])
 
 
     print("Training agent with label: ", Label)
