@@ -6,7 +6,7 @@ aolabs_api_key = os.getenv("AOLABS_API_KEY")
 
 gist = "https://gist.githubusercontent.com/Rafipilot/8fc2d8549f9fc7433c0ce01abe7b26d6/raw/689fda194eab6b786363fd92a047305193ab20cf/gistfile1.txt"
 
-url = "https://api.aolabs.ai/v0dev/kennel"
+url = "https://api.aolabs.ai/prod/kennel"
 
 headers = {
     "accept": "application/json",
